@@ -1,20 +1,34 @@
 """Módulo de Bingo (5x5).
 
-Implementa un cartón con una x en el medio por defecto,
-y realiza el sorteo de balotas del 1 al 75.
+Implementa un cartón con espacio libre central y sorteo de balotas del 1 al 75.
 """
 
 import random
 import time
-from .Juego import Juego
-from .Jugador import Jugador
 
 
-class Bingo(Juego):
+class Bingo:
 
-    def __init__(self) -> None:
-        super().__init__("Bingo 5x5", 5000, 500000)
-        self.multiplicador: float = 100
+    def __init__(
+        self,
+        nombre: str = "Bingo",
+        costo: float = 500000,
+        recompensa: float = 500000,
+        multiplicador: float = 100,
+        meta: int = 10,
+    ) -> None:
+        """Configura los datos base del juego.
+
+        Args:
+            nombre (str): Nombre comercial.
+            costo (float): Precio de la entrada.
+            recompensa (float): Premio en caso de ganar.
+        """
+        self.nombre: str = nombre
+        self.costo: float = costo
+        self.recompensa: float = recompensa
+        self.multiplicador: float = multiplicador
+        self.meta: int = meta
 
     def generar_carton(self) -> list[list[int]]:
         """Genera una matriz 5x5.
@@ -51,3 +65,46 @@ class Bingo(Juego):
     def ejecutar_sorteo(self) -> list[int]:
         """Extrae 25 balotas al azar del 1 al 75."""
         return random.sample(range(1, 76), 25)
+
+    def _marcar_numero(self, carton: list[list[any]], balota: int) -> bool:
+        """Busca y marca una balota en el cartón. Retorna True si la encontró."""
+
+        for f in range(5):
+            for c in range(5):
+                if carton[f][c] == balota:
+                    carton[f][c] = "X"
+                    return True
+        return False
+
+    def calcular_premio(self, balotas: list[int]) -> str:
+        """Dirige el sorteo, marca el cartón, verifica si el jugador ganó,
+        calcula el premio y actualiza la billetera del jugador.
+        """
+
+        carton = self.generar_carton()
+        self.aciertos: int = 1
+
+        print("\n--- COMENZAMOS ---")
+        self.mostrar_carton(carton)
+
+        for i, balota in enumerate(balotas):
+            print(f"Balota #{i+1}: [{balota}]")
+
+            if self._marcar_numero(carton, balota):
+                self.aciertos += 1
+                print("¡ACIERTO!")
+                self.mostrar_carton(carton)
+                time.sleep(1.0)
+            else:
+                print("No está")
+
+            if self.aciertos >= self.meta:
+                print(f"\n¡META ALCANZADA! Has marcado {self.meta} números.")
+                break
+
+        if self.aciertos >= self.meta:
+            premio = self.costo * self.multiplicador
+            return (
+                f"¡FELICIDADES! Alcanzaste los {self.meta} aciertos. Premio: ${premio}."
+            )
+        return f"Fin del sorteo. Solo lograste {self.aciertos} aciertos. Se requieren {self.meta} para ganar."
