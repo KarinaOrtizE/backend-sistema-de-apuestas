@@ -1,6 +1,7 @@
 from datetime import date
 from src.entities.Jugador import Jugador, registrar_jugador
 from src.entities.Billetera import Billetera
+from src.entities.Ruleta import Ruleta
 
 
 class Main:
@@ -128,13 +129,13 @@ class Main:
             opcion = input("Seleccione una opción: ")
 
             if opcion == "1":
-                # Aquí se llamará la clase Ruleta
+                # Ruleta
                 print("Entrando a Ruleta...")
             elif opcion == "2":
-                # Aquí se llamará la clase Bingo
+                # Bingo
                 print("Entrando a Bingo...")
             elif opcion == "3":
-                # Aquí se llamará la clase Lotería
+                # Loteria
                 print("Entrando a Lotería...")
             elif opcion == "0":
                 break
