@@ -1,3 +1,12 @@
+"""Módulo de la clase Ruleta Rápida.
+
+Implementa una ruleta simplificada donde un jugador puede apostar por:
+color, paridad o rango. Gestiona apuestas, sorteo, cálculo de premios e historial.
+
+Reglas especiales:
+- Si el resultado es 0, el jugador recibe la mitad de su apuesta.
+"""
+
 import random
 from src.entities.Juego import Juego
 from src.entities.Jugador import Jugador
@@ -5,10 +14,11 @@ from src.entities.Jugador import Jugador
 
 class RuletaRapida(Juego):
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Inicializa la ruleta con sus números, colores y estado de juego."""
         super().__init__("Ruleta Rápida", 0, 0)
 
-        self.numeros = [
+        self.numeros: list[int] = [
             0,
             32,
             15,
@@ -48,8 +58,28 @@ class RuletaRapida(Juego):
             26,
         ]
 
-        self.rojos = {1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36}
-        self.negros = {
+        self.rojos: set[int] = {
+            1,
+            3,
+            5,
+            7,
+            9,
+            12,
+            14,
+            16,
+            18,
+            19,
+            21,
+            23,
+            25,
+            27,
+            30,
+            32,
+            34,
+            36,
+        }
+
+        self.negros: set[int] = {
             2,
             4,
             6,
@@ -70,12 +100,19 @@ class RuletaRapida(Juego):
             35,
         }
 
-        self.apuesta_actual = None
-        self.monto_actual = 0
-        self.historial = []
+        self.apuesta_actual: str | None = None
+        self.monto_actual: float = 0
+        self.historial: list[dict] = []
 
     def comprar_boleto(self, jugador: Jugador) -> bool:
+        """Permite al jugador seleccionar una apuesta y monto válido.
 
+        Parámetros:
+            jugador (Jugador): jugador que realiza la apuesta.
+
+        Retorna:
+            bool: True si la apuesta fue registrada, False si no hay saldo.
+        """
         while True:
             print("\n--- RULETA RÁPIDA ---")
             print("Saldo actual:", jugador.saldo)
@@ -85,19 +122,29 @@ class RuletaRapida(Juego):
             print("4. Impar")
             print("5. 1-18 (Falta)")
             print("6. 19-36 (Pasa)")
-            print("7. Número exacto (0-36)")
 
-            opcion = input("Seleccione su apuesta: ")
+            opcion: str = input("Seleccione su apuesta: ")
 
-            if opcion not in ["1", "2", "3", "4", "5", "6", "7"]:
+            if opcion not in ["1", "2", "3", "4", "5", "6"]:
                 print("Opción inválida.")
                 continue
 
-            try:
-                monto = float(input("Ingrese monto a apostar: "))
-            except:
+            monto_texto: str = input("Ingrese monto a apostar: ")
+
+            es_numero = True
+            puntos = 0
+
+            for c in monto_texto:
+                if c == ".":
+                    puntos += 1
+                elif c < "0" or c > "9":
+                    es_numero = False
+
+            if not es_numero or puntos > 1 or monto_texto == "":
                 print("Monto inválido.")
                 continue
+
+            monto: float = float(monto_texto)
 
             if monto <= 0:
                 print("El monto debe ser mayor a 0.")
@@ -122,24 +169,16 @@ class RuletaRapida(Juego):
                 self.apuesta_actual = "falta"
             elif opcion == "6":
                 self.apuesta_actual = "pasa"
-            elif opcion == "7":
-                while True:
-                    try:
-                        numero = int(input("Elija número (0-36): "))
-                        if 0 <= numero <= 36:
-                            self.apuesta_actual = numero
-                            break
-                        else:
-                            print("Número fuera de rango.")
-                    except:
-                        print("Entrada inválida.")
-            break
 
-        return True
+            return True
 
-    def ejecutar_sorteo(self):
+    def ejecutar_sorteo(self) -> int:
+        """Realiza el sorteo de la ruleta.
 
-        resultado = random.choice(self.numeros)
+        Retorna:
+            int: número resultante de la ruleta.
+        """
+        resultado: int = random.choice(self.numeros)
 
         if resultado == 0:
             color = "Verde"
@@ -148,22 +187,29 @@ class RuletaRapida(Juego):
         else:
             color = "Negro"
 
-        print("\n Girando ruleta...")
+        print("\nGirando ruleta...")
         print(f"Resultado: {resultado} - {color}")
 
         return resultado
 
-    def calcular_premio(self, jugador: Jugador, resultado):
+    def calcular_premio(self, jugador: Jugador, resultado: int) -> str:
+        """Calcula y paga el premio según la apuesta realizada.
 
-        gano = False
-        premio = 0
+        Parámetros:
+            jugador (Jugador): jugador que apostó.
+            resultado (int): número obtenido en la ruleta.
 
-        if resultado == 0 and self.apuesta_actual == 0:
-            premio = self.monto_actual * 18
+        Retorna:
+            str: mensaje con el resultado de la jugada.
+        """
+        premio: float = 0
+        gano: bool = False
+
+        if resultado == 0:
+            premio = self.monto_actual / 2
             gano = True
 
-        elif resultado != 0:
-
+        else:
             if self.apuesta_actual == "rojo" and resultado in self.rojos:
                 premio = self.monto_actual * 2
                 gano = True
@@ -188,18 +234,11 @@ class RuletaRapida(Juego):
                 premio = self.monto_actual * 2
                 gano = True
 
-            elif (
-                isinstance(self.apuesta_actual, int)
-                and resultado == self.apuesta_actual
-            ):
-                premio = self.monto_actual * 18
-                gano = True
-
         if gano:
             jugador.saldo += premio
-            mensaje = f" Ganaste {premio}. Nuevo saldo: {jugador.saldo}"
+            mensaje = f"Ganaste {premio}. Nuevo saldo: {jugador.saldo}"
         else:
-            mensaje = f" Perdiste. Saldo actual: {jugador.saldo}"
+            mensaje = f"Perdiste. Saldo actual: {jugador.saldo}"
 
         self.historial.append(
             {
@@ -213,9 +252,11 @@ class RuletaRapida(Juego):
         print(mensaje)
         return mensaje
 
-    def mostrar_historial(self):
+    def mostrar_historial(self) -> None:
+        """Muestra el historial de jugadas realizadas."""
         print("\n===== HISTORIAL =====")
-        if not self.historial:
+
+        if len(self.historial) == 0:
             print("No hay jugadas registradas.")
             return
 
