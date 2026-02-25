@@ -1,6 +1,7 @@
 from datetime import date
-from src.entities.Jugador import Jugador
+from src.entities.Jugador import Jugador, registrar_jugador
 from src.entities.Billetera import Billetera
+from src.entities.Ruleta import Ruleta
 
 
 class Main:
@@ -48,36 +49,98 @@ class Main:
             return
 
         print(f"Bienvenido {jugador.nombre}")
-        self._menu_usuario(documento)
+        self.menu_usuario(documento)
 
     def crear_cuenta(self) -> None:
         print("\nCREAR CUENTA")
 
-        nombre = input("Nombre completo: ")
-        documento = int(input("Cédula: "))
-        correo = input("Correo: ")
+        jugador = registrar_jugador()
 
-        ano = int(input("Año de nacimiento: "))
-        mes = int(input("Mes de nacimiento: "))
-        dia = int(input("Día de nacimiento: "))
-
-        fecha_nacimiento = date(ano, mes, dia)
-
-        if not self._es_mayor_de_edad(fecha_nacimiento):
-            print("Debes ser mayor de edad para crear una cuenta.")
+        if not self.es_mayor_de_edad(jugador.fecha_nacimiento):
+            print("Debes ser mayor de edad para crear una cuenta en nuestro sistema.")
             return
 
-        if documento in self._jugadores:
+        if jugador.documento in self._jugadores:
             print("Ya existe una cuenta con esa cédula, intenta iniciar sesión.")
             return
 
-        jugador = Jugador(nombre, documento, correo, fecha_nacimiento)
         billetera = Billetera()
 
-        self._jugadores[documento] = jugador
-        self._billeteras[documento] = billetera
+        self._jugadores[jugador.documento] = jugador
+        self._billeteras[jugador.documento] = billetera
 
-        print("Tu cuenta se creó de forma exitosa. Ahora debe iniciar sesión.")
+        print("Tu cuenta se creó de forma exitosa. Ahora debes iniciar sesión.")
+
+    def es_mayor_de_edad(self, fecha_nacimiento: date) -> bool:
+        hoy = date.today()
+        edad = hoy.year - fecha_nacimiento.year
+
+        if (hoy.month, hoy.day) < (fecha_nacimiento.month, fecha_nacimiento.day):
+            edad -= 1
+
+        return edad >= self.EDAD_MINIMA
+
+    def menu_usuario(self, documento: int) -> None:
+        billetera = self._billeteras[documento]
+
+        while True:
+            print("\nMENÚ USUARIO")
+            print("1. Recargar saldo")
+            print("2. Visualizar saldo")
+            print("3. Jugar")
+            print("0. Cerrar sesión")
+
+            opcion = input("Seleccione una opción: ")
+
+            if opcion == "1":
+                monto = float(input("Ingrese monto a recargar: "))
+
+                if billetera.recargar(monto):
+                    print("Recarga exitosa.")
+                else:
+                    print(
+                        "Monto inválido. Para jugar en nuestro sistema debes de temer saldo disponible."
+                    )
+
+            elif opcion == "2":
+                print(billetera.mostrar_saldo())
+
+            elif opcion == "3":
+
+                if billetera.saldo <= 0:
+                    print("Debe recargar saldo antes de poder jugar.")
+                else:
+                    self.menu_juegos()
+
+            elif opcion == "0":
+                print("Sesión cerrada.")
+                break
+            else:
+                print("Opción no disponible.")
+
+    def menu_juegos(self) -> None:
+        while True:
+            print("\nMENÚ DE JUEGOS")
+            print("1. Ruleta")
+            print("2. Bingo")
+            print("3. Lotería")
+            print("0. Volver")
+
+            opcion = input("Seleccione una opción: ")
+
+            if opcion == "1":
+                # Ruleta
+                print("Entrando a Ruleta...")
+            elif opcion == "2":
+                # Bingo
+                print("Entrando a Bingo...")
+            elif opcion == "3":
+                # Loteria
+                print("Entrando a Lotería...")
+            elif opcion == "0":
+                break
+            else:
+                print("Opción no disponible.")
 
 
 if __name__ == "__main__":
