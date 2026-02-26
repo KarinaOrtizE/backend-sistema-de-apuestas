@@ -1,3 +1,14 @@
+"""
+Módulo que implementa el juego de Lotería 4 Cifras.
+
+Contiene la clase Loteria, que hereda de Juego y define la lógica
+para la compra de boletos, validación del número ingresado,
+ejecución del sorteo y cálculo del premio.
+
+El jugador debe ingresar un número de cuatro cifras (0-9) y gana
+si coincide exactamente con los números generados aleatoriamente.
+"""
+
 from typing import List, Any
 import random
 from src.entities.Juego import Juego
@@ -13,18 +24,18 @@ class Loteria(Juego):
         self.digitos = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
 
     def comprar_boleto(self, jugador: Jugador) -> bool:
-
+        """Descuenta el costo del juego y valida si el jugador puede jugar."""
         print(f"\n {self.nombre}")
         print("=" * 40)
         print(f"Jugador: {jugador.nombre}")
 
-        if not Jugador.billetera.descontar_saldo(self.costo):
+        if not jugador.billetera.descontar_saldo(self.costo):
             print(f" No tienes suficiente saldo. Necesitas ${self.costo:,}")
-            print(f" {Jugador.billetera.mostrar_saldo()}")
+            print(f" Saldo actual: ${jugador.billetera.mostrar_saldo():,}")
             return False
 
         print(f"Costo del juego: ${self.costo:,}")
-        print(f"{Jugador.billetera.mostrar_saldo()}")
+        print(f"Saldo actual: ${jugador.billetera.mostrar_saldo():,}")
         print("\n Debes ingresar un número de 4 cifras (cada cifra del 0-9)")
 
         return True
@@ -43,7 +54,7 @@ class Loteria(Juego):
         return True
 
     def obtener_numeros_jugador(self) -> List[int]:
-
+        """Solicita, valida y retorna los números ingresados por el jugador."""
         while True:
             numero_ingresado = input(" Ingresa un número de 4 cifras: ")
 
@@ -58,17 +69,17 @@ class Loteria(Juego):
                 return numeros
 
     def ejecutar_sorteo(self) -> List[int]:
-
+        """Genera aleatoriamente los cuatro números ganadores."""
         self.numeros_ganadores = []
 
         for i in range(4):
-            numero = random.randint(1, 9)
+            numero = random.randint(0, 9)
             self.numeros_ganadores.append(numero)
 
         return self.numeros_ganadores
 
     def calcular_premio(self, jugador: Jugador, resultado: List[int]) -> str:
-
+        """Compara los números y determina si el jugador gana premio."""
         print("\n" + "=" * 40)
         print(" RESULTADOS")
         print("=" * 40)
@@ -76,19 +87,17 @@ class Loteria(Juego):
         print(f" Números ganadores: {resultado}")
 
         if self.numeros_jugador == resultado:
-            # agregar la recompensa a la billetera
-            # jugador.billetera.agregar(self.recompensa)
+            jugador.billetera.sumar_saldo(self.recompensa)
             mensaje = (
                 f"\n ¡FELICIDADES {jugador.nombre}! ¡HAS GANADO!\n"
                 f" ¡Acertaste todos los números en el orden correcto!\n"
                 f" Premio: ${self.recompensa:,}"
             )
         else:
-            # Verificar aciertos por posición
+
             aciertos = 0
             aciertos_posiciones = []
 
-            # Comparamos posición por posición
             for i in range(4):
                 if self.numeros_jugador[i] == resultado[i]:
                     aciertos += 1
@@ -96,29 +105,21 @@ class Loteria(Juego):
 
             mensaje = f"\n Lo siento {jugador.nombre}, has perdido."
 
-        # mostrar el saldo actual
-        # mensaje += f"\n\n Saldo actual: ${jugador.billetera.consultar_saldo():,}"
+            mensaje += f"\n\n {jugador.billetera.mostrar_saldo():,}"
 
         return mensaje
 
     def jugar(self, jugador: Jugador) -> bool:
         """Método principal para jugar a la lotería"""
-        # Paso 1: Comprar boleto (validar fondos)
+
         if not self.comprar_boleto(jugador):
             return False
 
-        # Paso 2: Obtener números del jugador
         self.numeros_jugador = self.obtener_numeros_jugador()
 
-        # Paso 3: Ejecutar sorteo
         numeros_ganadores = self.ejecutar_sorteo()
 
-        # Paso 4: Calcular premio
         resultado = self.calcular_premio(jugador, numeros_ganadores)
         print(resultado)
 
         return True
-
-
-# borrar 123344345345345
-# borrar 123344345345345
