@@ -31,11 +31,11 @@ class Loteria(Juego):
 
         if not jugador.billetera.descontar_saldo(self.costo):
             print(f" No tienes suficiente saldo. Necesitas ${self.costo:,}")
-            print(f" Saldo actual: ${jugador.billetera.mostrar_saldo():,}")
+            print(f"Saldo actual: ${jugador.billetera.saldo:,.0f}")
             return False
 
         print(f"Costo del juego: ${self.costo:,}")
-        print(f"Saldo actual: ${jugador.billetera.mostrar_saldo():,}")
+        print(f"Saldo actual: ${jugador.billetera.saldo:,.0f}")
         print("\n Debes ingresar un número de 4 cifras (cada cifra del 0-9)")
 
         return True
@@ -105,7 +105,7 @@ class Loteria(Juego):
 
             mensaje = f"\n Lo siento {jugador.nombre}, has perdido."
 
-            mensaje += f"\n\n {jugador.billetera.mostrar_saldo():,}"
+            mensaje += f"\n\n Saldo actual: ${jugador.billetera.saldo:,.0f}"
 
         return mensaje
 
