@@ -5,14 +5,32 @@ from src.entities.Ruleta import RuletaRapida
 
 
 class Main:
+    """
+    Clase principal del sistema de apuestas.
+    Se encarga de gestionar el flujo del programa,
+    autenticación de usuarios y acceso a juegos.
+    """
 
     EDAD_MINIMA = 18
 
     def __init__(self) -> None:
+        """
+        Inicializa las estructuras principales del sistema:
+        - Diccionario de jugadores registrados.
+        - Diccionario de billeteras asociadas a cada jugador.
+        """
         self._jugadores: dict[int, Jugador] = {}
         self._billeteras: dict[int, Billetera] = {}
 
     def menu_principal(self) -> None:
+        """
+        Muestra el menú principal del sistema.
+
+        Permite:
+        - Iniciar sesión.
+        - Crear una cuenta nueva.
+        - Salir del sistema.
+        """
         while True:
             print("\n===== BIENVENIDO AL SISTEMA DE APUESTAS =====")
             print("\nAntes de jugar, debes crear o iniciar sesión en tu cuenta.")
@@ -33,6 +51,13 @@ class Main:
                 print("Opción no disponible.")
 
     def iniciar_sesion(self) -> None:
+        """
+        Permite a un usuario autenticarse en el sistema
+        validando nombre y documento.
+
+        Si la autenticación es exitosa, accede al menú
+        de usuario correspondiente.
+        """
         print("\nINICIAR SESIÓN")
 
         nombre = input("Nombre: ")
@@ -52,6 +77,15 @@ class Main:
         self.menu_usuario(documento)
 
     def crear_cuenta(self) -> None:
+        """
+        Registra un nuevo jugador en el sistema.
+
+        Valida:
+        - Que sea mayor de edad.
+        - Que no exista previamente una cuenta con el mismo documento.
+
+        Si todo es correcto, crea también una billetera asociada.
+        """
         print("\nCREAR CUENTA")
 
         jugador = registrar_jugador()
@@ -72,6 +106,14 @@ class Main:
         print("Tu cuenta se creó de forma exitosa. Ahora debes iniciar sesión.")
 
     def es_mayor_de_edad(self, fecha_nacimiento: date) -> bool:
+        """
+        Calcula si una persona es mayor de edad
+        comparando su fecha de nacimiento con la fecha actual.
+
+        Retorna:
+            True si tiene 18 años o más.
+            False en caso contrario.
+        """
         hoy = date.today()
         edad = hoy.year - fecha_nacimiento.year
 
@@ -81,6 +123,15 @@ class Main:
         return edad >= self.EDAD_MINIMA
 
     def menu_usuario(self, documento: int) -> None:
+        """
+        Muestra el menú del usuario autenticado.
+
+        Permite:
+        - Recargar saldo.
+        - Consultar saldo.
+        - Acceder al menú de juegos.
+        - Cerrar sesión.
+        """
         billetera = self._billeteras[documento]
 
         while True:
@@ -119,6 +170,14 @@ class Main:
                 print("Opción no disponible.")
 
     def menu_juegos(self) -> None:
+        """
+        Muestra el menú de juegos disponibles en el sistema.
+
+        Permite seleccionar entre:
+        - Ruleta
+        - Bingo
+        - Lotería
+        """
         while True:
             print("\nMENÚ DE JUEGOS")
             print("1. Ruleta")
