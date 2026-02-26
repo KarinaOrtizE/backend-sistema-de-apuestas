@@ -266,6 +266,8 @@ class Main:
                     print("Boleto comprado con éxito.")
                     balotas = juego_bingo.ejecutar_sorteo()
                     print(juego_bingo.calcular_premio(jugador, balotas))
+                else:
+                    print("Saldo insuficiente.")
 
             elif opcion == "3":
                 print("Entrando a Lotería...")
