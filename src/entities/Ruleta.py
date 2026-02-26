@@ -107,7 +107,6 @@ class RuletaRapida(Juego):
 
         self.apuesta_actual: str | None = None
         self.monto_actual: float = 0.0
-        self.historial: list[dict] = []
 
     def comprar_boleto(self, jugador: Jugador) -> bool:
         """Permite al jugador seleccionar una apuesta válida y descontar
@@ -250,20 +249,3 @@ class RuletaRapida(Juego):
 
         print(mensaje)
         return mensaje
-
-    def mostrar_historial(self) -> None:
-        """Muestra el historial de jugadas realizadas durante la sesión."""
-        print("\n===== HISTORIAL =====")
-
-        if not self.historial:
-            print("No hay jugadas registradas.")
-            return
-
-        for i, jugada in enumerate(self.historial, start=1):
-            print(
-                f"Ronda {i} -> "
-                f"Apuesta: {jugada['apuesta']} | "
-                f"Resultado: {jugada['resultado']} | "
-                f"Monto: {jugada['monto']} | "
-                f"Ganancia: {jugada['ganancia']}"
-            )
