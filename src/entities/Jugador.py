@@ -61,3 +61,6 @@ def registrar_jugador() -> Jugador:
     jugador = Jugador(nombre, documento, correo, fecha_nacimiento)
     print("Jugador registrado exitosamente.")
     return jugador
+
+
+##borrar
