@@ -1,6 +1,5 @@
 from datetime import date
-from src.entities.Jugador import Jugador, registrar_jugador
-from src.entities.Billetera import Billetera
+from src.entities.Jugador import Jugador
 from src.entities.Ruleta import RuletaRapida
 from src.entities.Bingo import Bingo
 from src.entities.Loteria import Loteria
@@ -9,19 +8,61 @@ from src.entities.Loteria import Loteria
 class Main:
     """
     Clase principal del sistema de apuestas.
-    Se encarga de gestionar el flujo del programa,
-    autenticación de usuarios y acceso a juegos.
+
+    Se encarga de:
+    - Gestionar el flujo del programa.
+    - Registrar y autenticar jugadores.
+    - Validar datos de entrada.
+    - Permitir el acceso a los diferentes juegos.
     """
 
     EDAD_MINIMA = 18
 
     def __init__(self) -> None:
         """
-        Inicializa las estructuras principales del sistema:
-        - Diccionario de jugadores registrados.
-        - Diccionario de billeteras asociadas a cada jugador.
+        Inicializa la estructura principal del sistema.
+
+        Atributos:
+            _jugadores (dict[int, Jugador]):
+                Diccionario que almacena los jugadores registrados,
+                usando el documento como clave.
         """
         self._jugadores: dict[int, Jugador] = {}
+
+    def validar_documento(self, mensaje: str = "Cédula: ") -> int | None:
+        """Solicita un documento al usuario y valida que sea un número entero.
+
+        Parámetros:
+            mensaje (str): Texto mostrado al solicitar el documento.
+
+        Retorna:
+            int: Documento válido.
+            None: Si el valor ingresado no es numérico.
+        """
+        documento_texto = input(mensaje)
+
+        try:
+            documento = int(documento_texto)
+            return documento
+        except ValueError:
+            print("Documento inválido. Debe ingresar solo números.")
+            return None
+
+    def validar_correo(self) -> str | None:
+        """Solicita un correo electrónico y valida que contenga '@'
+        y tenga un formato básico correcto.
+
+        Retorna:
+            str: Correo válido.
+            None: Si el formato es incorrecto.
+        """
+        correo = input("Ingrese correo: ").strip()
+
+        if "@" not in correo or correo.startswith("@") or correo.endswith("@"):
+            print("Correo inválido. Debe contener '@' y tener formato válido.")
+            return None
+
+        return correo
 
     def menu_principal(self) -> None:
         """
@@ -54,15 +95,18 @@ class Main:
     def iniciar_sesion(self) -> None:
         """
         Permite a un usuario autenticarse en el sistema
-        validando nombre y documento.
+                validando nombre y documento.
 
-        Si la autenticación es exitosa, accede al menú
-        de usuario correspondiente.
+                Si la autenticación es exitosa, accede al menú
+                de usuario correspondiente.
         """
         print("\nINICIAR SESIÓN")
 
         nombre = input("Nombre: ")
-        documento = int(input("Cédula: "))
+        documento = self.validar_documento()
+
+        if documento is None:
+            return
 
         if documento not in self._jugadores:
             print("Usuario no encontrado.")
@@ -79,38 +123,56 @@ class Main:
 
     def crear_cuenta(self) -> None:
         """
-        Registra un nuevo jugador en el sistema.
+        Registra un nuevo jugador validando:
 
-        Valida:
-        - Que sea mayor de edad.
-        - Que no exista previamente una cuenta con el mismo documento.
-
-        Si todo es correcto, crea también una billetera asociada.
+        - Documento numérico.
+        - Correo con formato básico válido.
+        - Mayoría de edad.
+        - Documento no duplicado.
         """
         print("\nCREAR CUENTA")
 
-        jugador = registrar_jugador()
+        nombre = input("Ingrese nombre: ")
 
-        if not self.es_mayor_de_edad(jugador.fecha_nacimiento):
-            print("Debes ser mayor de edad para crear una cuenta en nuestro sistema.")
+        documento = self.validar_documento("Ingrese documento: ")
+        if documento is None:
             return
 
-        if jugador.documento in self._jugadores:
+        if documento in self._jugadores:
             print("Ya existe una cuenta con esa cédula, intenta iniciar sesión.")
             return
 
-        self._jugadores[jugador.documento] = jugador
+        correo = self.validar_correo()
+        if correo is None:
+            return
+
+        try:
+            ano = int(input("Ingrese año de nacimiento: "))
+            mes = int(input("Ingrese mes de nacimiento: "))
+            dia = int(input("Ingrese día de nacimiento: "))
+            fecha_nacimiento = date(ano, mes, dia)
+        except ValueError:
+            print("Fecha inválida.")
+            return
+
+        if not self.es_mayor_de_edad(fecha_nacimiento):
+            print("Debes ser mayor de edad para crear una cuenta en nuestro sistema.")
+            return
+
+        jugador = Jugador(nombre, documento, correo, fecha_nacimiento)
+        self._jugadores[documento] = jugador
 
         print("Tu cuenta se creó de forma exitosa. Ahora debes iniciar sesión.")
 
     def es_mayor_de_edad(self, fecha_nacimiento: date) -> bool:
         """
-        Calcula si una persona es mayor de edad
-        comparando su fecha de nacimiento con la fecha actual.
+        Determina si una persona es mayor de edad.
+
+        Parámetros:
+            fecha_nacimiento (date): Fecha de nacimiento del jugador.
 
         Retorna:
-            True si tiene 18 años o más.
-            False en caso contrario.
+            bool: True si tiene 18 años o más, False en caso contrario.
         """
         hoy = date.today()
         edad = hoy.year - fecha_nacimiento.year
@@ -121,8 +183,7 @@ class Main:
         return edad >= self.EDAD_MINIMA
 
     def menu_usuario(self, documento: int) -> None:
-        """
-        Muestra el menú del usuario autenticado.
+        """Muestra el menú del usuario autenticado.
 
         Permite:
         - Recargar saldo.
@@ -143,14 +204,16 @@ class Main:
             opcion = input("Seleccione una opción: ")
 
             if opcion == "1":
-                monto = float(input("Ingrese monto a recargar: "))
+                try:
+                    monto = float(input("Ingrese monto a recargar: "))
+                except ValueError:
+                    print("Monto inválido.")
+                    continue
 
                 if billetera.recargar(monto):
                     print("Recarga exitosa.")
                 else:
-                    print(
-                        "Monto inválido. Para jugar en nuestro sistema debes de temer saldo disponible."
-                    )
+                    print("Monto inválido.")
 
             elif opcion == "2":
                 print(billetera.mostrar_saldo())
@@ -170,12 +233,7 @@ class Main:
 
     def menu_juegos(self, documento: int) -> None:
         """
-        Muestra el menú de juegos disponibles en el sistema.
-
-        Permite seleccionar entre:
-        - Ruleta
-        - Bingo
-        - Lotería
+        Permite seleccionar entre los juegos disponibles.
         """
         jugador = self._jugadores[documento]
 
@@ -187,6 +245,7 @@ class Main:
             print("0. Volver")
 
             opcion = input("Seleccione una opción: ")
+
             if opcion == "1":
                 print("Entrando a Ruleta...")
 
@@ -206,10 +265,7 @@ class Main:
                 if juego_bingo.comprar_boleto(jugador):
                     print("Boleto comprado con éxito.")
                     balotas = juego_bingo.ejecutar_sorteo()
-                    resultado = juego_bingo.calcular_premio(jugador, balotas)
-                    print(resultado)
-                else:
-                    print("No tienes saldo suficiente para comprar el boleto.")
+                    print(juego_bingo.calcular_premio(jugador, balotas))
 
             elif opcion == "3":
                 print("Entrando a Lotería...")
