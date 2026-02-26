@@ -5,6 +5,8 @@ Implementa un cartón con espacio libre central y sorteo de balotas del 1 al 75.
 
 import random
 import time
+from .Juego import Juego
+from .Jugador import Jugador
 
 
 class Bingo:
@@ -30,6 +32,17 @@ class Bingo:
         self.multiplicador: float = multiplicador
         self.meta: int = meta
 
+    def comprar_boleto(self, jugador: Jugador) -> bool:
+        """Verifica saldo antes de entregar el cartón.
+
+        Args:
+            jugador (Jugador)
+
+        Returns:
+            bool: El resultado de si se pudo descontar el saldo
+        """
+        return jugador.billetera.descontar_saldo(self.costo)
+
     def generar_carton(self) -> list[list[int]]:
         """Genera una matriz 5x5.
 
@@ -51,7 +64,7 @@ class Bingo:
         return carton
 
     def mostrar_carton(self, carton: list[list[int]]) -> None:
-        """Muestra en consola el cartón de Bingo
+        """Muestra en consola el cartón de Bingo.
 
         Args:
             carton (list[list[int]]): una matriz 5x5
@@ -76,9 +89,16 @@ class Bingo:
                     return True
         return False
 
-    def calcular_premio(self, balotas: list[int]) -> str:
-        """Dirige el sorteo, marca el cartón, verifica si el jugador ganó,
+    def calcular_premio(self, jugador: Jugador, balotas: list[int]) -> str:
+        """
+        Dirige el sorteo, marca el cartón, verifica si el jugador ganó,
         calcula el premio y actualiza la billetera del jugador.
+
+        Args:
+            jugador (Jugador)
+            balotas (list[int]): números aleatorios que salieron.
+        Returns:
+            str: Un mensaje que indica si ganó o perdió.
         """
 
         carton = self.generar_carton()
@@ -104,6 +124,7 @@ class Bingo:
 
         if self.aciertos >= self.meta:
             premio = self.costo * self.multiplicador
+            jugador.billetera.sumar_saldo(premio)
             return (
                 f"¡FELICIDADES! Alcanzaste los {self.meta} aciertos. Premio: ${premio}."
             )
