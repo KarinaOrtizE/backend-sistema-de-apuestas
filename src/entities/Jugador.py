@@ -48,6 +48,11 @@ class Jugador:
         """Devuelve la fecha de nacimiento del jugador."""
         return self._fecha_nacimiento
 
+    @property
+    def billetera(self) -> Billetera:
+        """Devuelve la billetera del jugador."""
+        return self._billetera
+
     def __str__(self):
         """Retorna una representación en texto del jugador."""
         return f"{self._nombre} - {self._documento}"
