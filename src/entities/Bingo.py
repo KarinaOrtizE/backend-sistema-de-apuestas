@@ -14,7 +14,7 @@ class Bingo:
     def __init__(
         self,
         nombre: str = "Bingo",
-        costo: float = 500000,
+        costo: float = 5000,
         recompensa: float = 500000,
         multiplicador: float = 100,
         meta: int = 10,
