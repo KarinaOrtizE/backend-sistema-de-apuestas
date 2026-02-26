@@ -1,7 +1,7 @@
 from datetime import date
 from src.entities.Jugador import Jugador, registrar_jugador
 from src.entities.Billetera import Billetera
-from src.entities.Ruleta import Ruleta
+from src.entities.Ruleta import RuletaRapida
 
 
 class Main:
