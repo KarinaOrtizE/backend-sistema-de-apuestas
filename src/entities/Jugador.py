@@ -29,6 +29,11 @@ class Jugador:
         return self._nombre
 
     @property
+    def billetera(self):
+        """Devuelve la billetera del jugador."""
+        return self._billetera
+
+    @property
     def documento(self):
         """Devuelve el documento del jugador."""
         return self._documento
@@ -68,3 +73,6 @@ def registrar_jugador() -> Jugador:
     jugador = Jugador(nombre, documento, correo, fecha_nacimiento)
     print("Jugador registrado exitosamente.")
     return jugador
+
+
+##borrar325252345
