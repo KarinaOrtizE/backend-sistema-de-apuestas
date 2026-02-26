@@ -7,6 +7,7 @@ por consola.
 """
 
 from datetime import date
+from .Billetera import Billetera
 
 
 class Jugador:
@@ -20,11 +21,17 @@ class Jugador:
         self._documento = documento
         self._correo = correo.strip()
         self._fecha_nacimiento = fecha_nacimiento
+        self._billetera: Billetera = Billetera()
 
     @property
     def nombre(self):
         """Devuelve el nombre del jugador."""
         return self._nombre
+
+    @property
+    def billetera(self):
+        """Devuelve la billetera del jugador."""
+        return self._billetera
 
     @property
     def documento(self):
@@ -63,4 +70,4 @@ def registrar_jugador() -> Jugador:
     return jugador
 
 
-##borrar
+##borrar325252345
