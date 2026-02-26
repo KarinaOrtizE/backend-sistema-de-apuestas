@@ -16,3 +16,20 @@ class Billetera:
 
     def mostrar_saldo(self) -> str:
         return f"Saldo actual: ${self._saldo}"
+
+    def descontar_saldo(self, monto: float) -> bool:
+        if monto <= 0:
+            return False
+
+        if self._saldo >= monto:
+            self._saldo -= monto
+            return True
+
+        return False
+
+    def sumar_saldo(self, monto: float) -> bool:
+        if monto <= 0:
+            return False
+
+        self._saldo += monto
+        return True
