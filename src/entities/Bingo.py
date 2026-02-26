@@ -41,6 +41,7 @@ class Bingo:
         Returns:
             bool: El resultado de si se pudo descontar el saldo
         """
+        print("Valor: 5000")
         return jugador.billetera.descontar_saldo(self.costo)
 
     def generar_carton(self) -> list[list[int]]:
