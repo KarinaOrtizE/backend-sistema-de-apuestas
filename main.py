@@ -2,6 +2,8 @@ from datetime import date
 from src.entities.Jugador import Jugador, registrar_jugador
 from src.entities.Billetera import Billetera
 from src.entities.Ruleta import RuletaRapida
+from src.entities.Bingo import Bingo
+from src.entities.Loteria import Loteria
 
 
 class Main:
@@ -20,7 +22,6 @@ class Main:
         - Diccionario de billeteras asociadas a cada jugador.
         """
         self._jugadores: dict[int, Jugador] = {}
-        self._billeteras: dict[int, Billetera] = {}
 
     def menu_principal(self) -> None:
         """
@@ -98,10 +99,7 @@ class Main:
             print("Ya existe una cuenta con esa cédula, intenta iniciar sesión.")
             return
 
-        billetera = Billetera()
-
         self._jugadores[jugador.documento] = jugador
-        self._billeteras[jugador.documento] = billetera
 
         print("Tu cuenta se creó de forma exitosa. Ahora debes iniciar sesión.")
 
@@ -132,7 +130,8 @@ class Main:
         - Acceder al menú de juegos.
         - Cerrar sesión.
         """
-        billetera = self._billeteras[documento]
+        jugador = self._jugadores[documento]
+        billetera = jugador.billetera
 
         while True:
             print("\nMENÚ USUARIO")
@@ -161,7 +160,7 @@ class Main:
                 if billetera.saldo <= 0:
                     print("Debe recargar saldo antes de poder jugar.")
                 else:
-                    self.menu_juegos()
+                    self.menu_juegos(documento)
 
             elif opcion == "0":
                 print("Sesión cerrada.")
@@ -169,7 +168,7 @@ class Main:
             else:
                 print("Opción no disponible.")
 
-    def menu_juegos(self) -> None:
+    def menu_juegos(self, documento: int) -> None:
         """
         Muestra el menú de juegos disponibles en el sistema.
 
@@ -178,6 +177,8 @@ class Main:
         - Bingo
         - Lotería
         """
+        jugador = self._jugadores[documento]
+
         while True:
             print("\nMENÚ DE JUEGOS")
             print("1. Ruleta")
@@ -186,18 +187,38 @@ class Main:
             print("0. Volver")
 
             opcion = input("Seleccione una opción: ")
-
             if opcion == "1":
-                # Ruleta
                 print("Entrando a Ruleta...")
+
+                juego_ruleta = RuletaRapida()
+
+                if juego_ruleta.comprar_boleto(jugador):
+                    resultado = juego_ruleta.ejecutar_sorteo()
+                    juego_ruleta.calcular_premio(jugador, resultado)
+                else:
+                    print("No se pudo realizar la apuesta.")
+
             elif opcion == "2":
-                # Bingo
                 print("Entrando a Bingo...")
+
+                juego_bingo = Bingo()
+
+                if juego_bingo.comprar_boleto(jugador):
+                    print("Boleto comprado con éxito.")
+                    balotas = juego_bingo.ejecutar_sorteo()
+                    resultado = juego_bingo.calcular_premio(jugador, balotas)
+                    print(resultado)
+                else:
+                    print("No tienes saldo suficiente para comprar el boleto.")
+
             elif opcion == "3":
-                # Loteria
                 print("Entrando a Lotería...")
+                juego_loteria = Loteria()
+                juego_loteria.jugar(jugador)
+
             elif opcion == "0":
                 break
+
             else:
                 print("Opción no disponible.")
 
