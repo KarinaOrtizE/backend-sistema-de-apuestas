@@ -107,6 +107,7 @@ class RuletaRapida(Juego):
 
         self.apuesta_actual: str | None = None
         self.monto_actual: float = 0.0
+        self.historial: list[dict] = []
 
     def comprar_boleto(self, jugador: Jugador) -> bool:
         """Permite al jugador seleccionar una apuesta válida y descontar
