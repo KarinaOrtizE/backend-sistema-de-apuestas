@@ -32,9 +32,9 @@ def listar_metodos_usuario(id_dueno: uuid.UUID) -> List[MetodoPago]:
 
 def actualizar_metodo(
     id_metodo: uuid.UUID,
-    nuevo_titular: str = None,
-    nuevo_tipo: str = None,
-    id_admin: uuid.UUID = None,
+    nuevo_titular: Optional[str] = None,
+    nuevo_tipo: Optional[str] = None,
+    id_admin: Optional[uuid.UUID] = None,
 ) -> Optional[MetodoPago]:
     metodo = obtener_por_id(id_metodo)
 
@@ -43,13 +43,13 @@ def actualizar_metodo(
         return None
 
     if nuevo_titular is not None:
-        metodo.nombre_titular = nuevo_titular
+        setattr(metodo, "nombre_titular", nuevo_titular)
 
     if nuevo_tipo is not None:
-        metodo.tipo_metodo = nuevo_tipo
+        setattr(metodo, "tipo_metodo", nuevo_tipo)
 
     if id_admin is not None:
-        metodo.id_usuario_edita = id_admin
+        setattr(metodo, "id_usuario_edita", id_admin)
 
     try:
         db.commit()
