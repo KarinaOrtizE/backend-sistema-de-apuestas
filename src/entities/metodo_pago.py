@@ -20,11 +20,9 @@ class MetodoPago(Base):
         ForeignKey("usuario.id_usuario", ondelete="CASCADE"),
         nullable=False,
     )
-
     id_usuario_creacion = Column(
         UUID(as_uuid=True), ForeignKey("usuario.id_usuario"), nullable=False
     )
-
     id_usuario_edita = Column(
         UUID(as_uuid=True), ForeignKey("usuario.id_usuario"), nullable=True
     )
@@ -32,13 +30,11 @@ class MetodoPago(Base):
     fecha_creacion = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
-
     fecha_edicion = Column(DateTime(timezone=True), onupdate=func.now(), nullable=True)
 
     usuario_dueno = relationship(
-        "Usuario", foreign_keys=[id_usuario_dueno], back_populates="metodos_pago"
+        "Usuario", back_populates="metodos_pago", foreign_keys=[id_usuario_dueno]
     )
-
     usuario_creador = relationship("Usuario", foreign_keys=[id_usuario_creacion])
     usuario_editor = relationship("Usuario", foreign_keys=[id_usuario_edita])
 
