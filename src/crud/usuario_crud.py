@@ -62,6 +62,11 @@ def listar_todos() -> List[Usuario]:
     return db.query(Usuario).all()
 
 
+def hay_usuarios() -> bool:
+
+    return db.query(Usuario).first() is not None
+
+
 def actualizar_usuario(
     id_usuario: uuid.UUID,
     id_usuario_edita: uuid.UUID,
