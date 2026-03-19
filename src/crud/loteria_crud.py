@@ -1,9 +1,10 @@
 from typing import List, Optional
 from uuid import UUID
 from decimal import Decimal
+from sqlalchemy import text
 
 from src.database.config import SessionLocal
-from entities.loteria import Loteria
+from src.entities.loteria import Loteria
 
 db = SessionLocal()
 
@@ -36,11 +37,14 @@ def crear_loteria(
 
     return loteria
 
+
 def obtener_loteria(id_loteria: UUID) -> Optional[Loteria]:
     return db.query(Loteria).filter(Loteria.id_loteria == id_loteria).first()
 
+
 def obtener_loterias(skip: int = 0, limit: int = 100) -> List[Loteria]:
     return db.query(Loteria).offset(skip).limit(limit).all()
+
 
 def actualizar_loteria(id_loteria: UUID, **kwargs) -> Optional[Loteria]:
     loteria = obtener_loteria(id_loteria)
@@ -77,22 +81,12 @@ def actualizar_loteria(id_loteria: UUID, **kwargs) -> Optional[Loteria]:
 
     return loteria
 
+
 def eliminar_loteria(id_loteria: UUID) -> bool:
     loteria = obtener_loteria(id_loteria)
 
     if loteria:
-        sorteo_asociado = db.execute(
-            "SELECT id_sorteo FROM sorteo WHERE id_loteria = :id_loteria LIMIT 1",
-            {"id_loteria": id_loteria},
-        ).first()
-
-        if sorteo_asociado:
-            raise ValueError(
-                "No se puede eliminar: la lotería tiene sorteos asociados"
-            )
-
         db.delete(loteria)
         db.commit()
         return True
-
     return False
