@@ -1,74 +1,79 @@
 from typing import List, Optional
 from uuid import UUID
+from src.database.config import SessionLocal
+from src.entities.transaccion import Transaccion
 
-from sqlalchemy.orm import Session
-from entities.transaccion import Transaccion
+db = SessionLocal()
 
 
-class TransaccionCRUD:
+def crear(
+    tipo,
+    monto: float,
+    id_billetera: UUID,
+    id_metodo_pago: UUID,
+) -> Transaccion:
+    """Crea una transacción."""
 
-    def __init__(self, db: Session):
-        self.db = db
+    if monto <= 0:
+        raise ValueError("El monto debe ser mayor que 0")
 
-    def crear_transaccion(
-        self, tipo, monto, id_billetera, id_metodo_pago
-    ) -> Transaccion:
+    nueva_transaccion = Transaccion(
+        tipo=tipo,
+        monto=monto,
+        id_billetera=id_billetera,
+        id_metodo_pago=id_metodo_pago,
+    )
 
-        if monto <= 0:
-            raise ValueError("El monto debe ser mayor que 0")
+    db.add(nueva_transaccion)
+    db.commit()
+    db.refresh(nueva_transaccion)
 
-        transaccion = Transaccion(
-            tipo=tipo,
-            monto=monto,
-            id_billetera=id_billetera,
-            id_metodo_pago=id_metodo_pago,
-        )
+    return nueva_transaccion
 
-        self.db.add(transaccion)
-        self.db.commit()
-        self.db.refresh(transaccion)
 
+def obtener_por_id(id_transaccion: UUID) -> Optional[Transaccion]:
+    return (
+        db.query(Transaccion)
+        .filter(Transaccion.id_transaccion == id_transaccion)
+        .first()
+    )
+
+
+def listar_todos() -> List[Transaccion]:
+    return db.query(Transaccion).all()
+
+
+def actualizar(
+    id_transaccion: UUID,
+    **kwargs: dict,
+) -> Optional[Transaccion]:
+
+    transaccion = obtener_por_id(id_transaccion)
+
+    if transaccion is None:
+        print("Error: No se encontró la transacción")
+        return None
+
+    for key, value in kwargs.items():
+        if hasattr(transaccion, key):
+            setattr(transaccion, key, value)
+
+    try:
+        db.commit()
+        db.refresh(transaccion)
         return transaccion
+    except Exception as e:
+        db.rollback()
+        print(f"Error al actualizar: {e}")
+        return None
 
-    def obtener_transaccion(self, id_transaccion: UUID) -> Optional[Transaccion]:
 
-        return (
-            self.db.query(Transaccion)
-            .filter(Transaccion.id_transaccion == id_transaccion)
-            .first()
-        )
+def eliminar(id_transaccion: UUID) -> bool:
+    transaccion = obtener_por_id(id_transaccion)
 
-    def obtener_transacciones(
-        self, skip: int = 0, limit: int = 100
-    ) -> List[Transaccion]:
+    if transaccion:
+        db.delete(transaccion)
+        db.commit()
+        return True
 
-        return self.db.query(Transaccion).offset(skip).limit(limit).all()
-
-    def actualizar_transaccion(
-        self, id_transaccion: UUID, **kwargs
-    ) -> Optional[Transaccion]:
-
-        transaccion = self.obtener_transaccion(id_transaccion)
-
-        if not transaccion:
-            return None
-
-        for key, value in kwargs.items():
-            if hasattr(transaccion, key):
-                setattr(transaccion, key, value)
-
-        self.db.commit()
-        self.db.refresh(transaccion)
-
-        return transaccion
-
-    def eliminar_transaccion(self, id_transaccion: UUID) -> bool:
-
-        transaccion = self.obtener_transaccion(id_transaccion)
-
-        if transaccion:
-            self.db.delete(transaccion)
-            self.db.commit()
-            return True
-
-        return False
+    return False
