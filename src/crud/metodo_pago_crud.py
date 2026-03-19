@@ -1,11 +1,14 @@
-from sqlalchemy.orm import Session
-from src.entities.metodo_pago import MetodoPago
-from typing import List, Optional
 import uuid
+from typing import List, Optional
+
+from src.database.config import SessionLocal
+from src.entities.metodo_pago import MetodoPago
+
+db = SessionLocal()
 
 
 def registrar_metodo_pago(
-    db: Session, tipo: str, titular: str, id_dueno: uuid.UUID, id_admin: uuid.UUID
+    tipo: str, titular: str, id_dueno: uuid.UUID, id_admin: uuid.UUID
 ) -> MetodoPago:
     nuevo_metodo = MetodoPago(
         tipo_metodo=tipo,
@@ -19,19 +22,49 @@ def registrar_metodo_pago(
     return nuevo_metodo
 
 
-def actualizar_titular_metodo(
-    db: Session, id_metodo: uuid.UUID, nuevo_titular: str, id_admin: uuid.UUID
-) -> Optional[MetodoPago]:
-    metodo = db.query(MetodoPago).filter(MetodoPago.id_metodo_pago == id_metodo).first()
+def obtener_por_id(id_metodo: uuid.UUID) -> Optional[MetodoPago]:
+    return db.query(MetodoPago).filter(MetodoPago.id_metodo_pago == id_metodo).first()
 
-    if metodo:
+
+def listar_metodos_usuario(id_dueno: uuid.UUID) -> List[MetodoPago]:
+    return db.query(MetodoPago).filter(MetodoPago.id_usuario_dueno == id_dueno).all()
+
+
+def actualizar_metodo(
+    id_metodo: uuid.UUID,
+    nuevo_titular: str = None,
+    nuevo_tipo: str = None,
+    id_admin: uuid.UUID = None,
+) -> Optional[MetodoPago]:
+    metodo = obtener_por_id(id_metodo)
+
+    if metodo is None:
+        print("Error: No se encontró el método de pago")
+        return None
+
+    if nuevo_titular is not None:
         metodo.nombre_titular = nuevo_titular
+
+    if nuevo_tipo is not None:
+        metodo.tipo_metodo = nuevo_tipo
+
+    if id_admin is not None:
         metodo.id_usuario_edita = id_admin
 
+    try:
         db.commit()
         db.refresh(metodo)
-    return metodo
+        return metodo
+    except Exception as e:
+        db.rollback()
+        print(f"Error al actualizar: {e}")
+        return None
 
 
-def listar_metodos_usuario(db: Session, id_dueno: uuid.UUID) -> List[MetodoPago]:
-    return db.query(MetodoPago).filter(MetodoPago.id_usuario_dueno == id_dueno).all()
+def eliminar(id_metodo: uuid.UUID) -> bool:
+    metodo = obtener_por_id(id_metodo)
+    if metodo:
+        db.delete(metodo)
+        db.commit()
+        return True
+    return False

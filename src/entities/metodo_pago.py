@@ -6,7 +6,6 @@ from src.database.config import Base
 
 
 class MetodoPago(Base):
-
     __tablename__ = "metodo_pago"
 
     id_metodo_pago = Column(
@@ -22,12 +21,6 @@ class MetodoPago(Base):
         nullable=False,
     )
 
-    fecha_creacion = Column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
-    )
-
-    fecha_edicion = Column(DateTime(timezone=True), onupdate=func.now(), nullable=True)
-
     id_usuario_creacion = Column(
         UUID(as_uuid=True), ForeignKey("usuario.id_usuario"), nullable=False
     )
@@ -36,7 +29,13 @@ class MetodoPago(Base):
         UUID(as_uuid=True), ForeignKey("usuario.id_usuario"), nullable=True
     )
 
-    usuario = relationship(
+    fecha_creacion = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    fecha_edicion = Column(DateTime(timezone=True), onupdate=func.now(), nullable=True)
+
+    usuario_dueno = relationship(
         "Usuario", foreign_keys=[id_usuario_dueno], back_populates="metodos_pago"
     )
 
