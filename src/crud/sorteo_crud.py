@@ -11,9 +11,9 @@ db = SessionLocal()
 
 def programar_sorteo(
     fecha_evento: datetime,
-    id_bingo: uuid.UUID = None,
-    id_ruleta: uuid.UUID = None,
-    id_loteria: uuid.UUID = None,
+    id_bingo: Optional[uuid.UUID] = None,
+    id_ruleta: Optional[uuid.UUID] = None,
+    id_loteria: Optional[uuid.UUID] = None,
 ) -> Sorteo:
 
     nuevo = Sorteo(
