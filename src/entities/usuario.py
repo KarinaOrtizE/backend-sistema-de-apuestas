@@ -3,6 +3,7 @@ from sqlalchemy import Column, String, Date, DateTime, Boolean, ForeignKey, func
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import relationship
 from src.database.config import Base
+from src.entities.metodo_pago import MetodoPago  # Para foreign_keys
 
 
 class Usuario(Base):
@@ -31,8 +32,12 @@ class Usuario(Base):
         PG_UUID(as_uuid=True), ForeignKey("usuario.id_usuario"), nullable=True
     )
 
+    # Relación con MetodoPago: especificamos la columna que es la FK
     metodos_pago = relationship(
-        "MetodoPago", back_populates="usuario_dueno", cascade="all, delete-orphan"
+        "MetodoPago",
+        back_populates="usuario_dueno",
+        cascade="all, delete-orphan",
+        foreign_keys="[MetodoPago.id_usuario_dueno]",
     )
 
     def __repr__(self):

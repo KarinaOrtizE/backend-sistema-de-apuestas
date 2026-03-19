@@ -188,7 +188,7 @@ def menu_bingos(usuario_id: UUID) -> None:
 # Menú Sorteo
 
 
-def menu_sorteos(usuario_id: uuid.UUID) -> None:
+def menu_sorteos(usuario_id: UUID) -> None:
     while True:
         print("\n--- Sorteos ---")
         print("1. Listar  2. Crear  3. Actualizar  4. Eliminar  0. Volver")
@@ -410,7 +410,7 @@ def menu_loterias(usuario_id: UUID) -> None:
 # Menú Metodo pago
 
 
-def menu_metodos_pago(usuario_id: uuid.UUID) -> None:
+def menu_metodos_pago(usuario_id: UUID) -> None:
     while True:
         print("\n--- Métodos de Pago ---")
         print("1. Listar  2. Crear  3. Actualizar  4. Eliminar  0. Volver")
