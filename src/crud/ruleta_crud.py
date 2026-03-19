@@ -1,68 +1,76 @@
 from typing import List, Optional
 from uuid import UUID
+from src.database.config import SessionLocal
+from src.entities.ruleta import Ruleta
 
-from sqlalchemy.orm import Session
-from entities.ruleta import Ruleta
+db = SessionLocal()
 
 
-class RuletaCRUD:
+def crear(
+    eleccion_usuario: str,
+    costo_entrada: float,
+    recompensa: float,
+) -> Ruleta:
+    """Crea una ruleta."""
 
-    def __init__(self, db: Session):
-        self.db = db
+    if costo_entrada <= 0:
+        raise ValueError("El costo de entrada debe ser mayor que 0")
 
-    def crear_ruleta(
-        self, eleccion_usuario: str, costo_entrada: float, recompensa: float
-    ) -> Ruleta:
+    if recompensa <= 0:
+        raise ValueError("La recompensa debe ser mayor que 0")
 
-        if costo_entrada <= 0:
-            raise ValueError("El costo de entrada debe ser mayor que 0")
+    nueva_ruleta = Ruleta(
+        eleccion_usuario=eleccion_usuario,
+        costo_entrada=costo_entrada,
+        recompensa=recompensa,
+    )
 
-        if recompensa <= 0:
-            raise ValueError("La recompensa debe ser mayor que 0")
+    db.add(nueva_ruleta)
+    db.commit()
+    db.refresh(nueva_ruleta)
 
-        ruleta = Ruleta(
-            eleccion_usuario=eleccion_usuario,
-            costo_entrada=costo_entrada,
-            recompensa=recompensa,
-        )
+    return nueva_ruleta
 
-        self.db.add(ruleta)
-        self.db.commit()
-        self.db.refresh(ruleta)
 
+def obtener_por_id(id_ruleta: UUID) -> Optional[Ruleta]:
+    return db.query(Ruleta).filter(Ruleta.id_ruleta == id_ruleta).first()
+
+
+def listar_todos() -> List[Ruleta]:
+    return db.query(Ruleta).all()
+
+
+def actualizar(
+    id_ruleta: UUID,
+    **kwargs: dict,
+) -> Optional[Ruleta]:
+
+    ruleta = obtener_por_id(id_ruleta)
+
+    if ruleta is None:
+        print("Error: No se encontró la ruleta")
+        return None
+
+    for key, value in kwargs.items():
+        if hasattr(ruleta, key):
+            setattr(ruleta, key, value)
+
+    try:
+        db.commit()
+        db.refresh(ruleta)
         return ruleta
+    except Exception as e:
+        db.rollback()
+        print(f"Error al actualizar: {e}")
+        return None
 
-    def obtener_ruleta(self, id_ruleta: UUID) -> Optional[Ruleta]:
 
-        return self.db.query(Ruleta).filter(Ruleta.id_ruleta == id_ruleta).first()
+def eliminar(id_ruleta: UUID) -> bool:
+    ruleta = obtener_por_id(id_ruleta)
 
-    def obtener_ruletas(self, skip: int = 0, limit: int = 100) -> List[Ruleta]:
+    if ruleta:
+        db.delete(ruleta)
+        db.commit()
+        return True
 
-        return self.db.query(Ruleta).offset(skip).limit(limit).all()
-
-    def actualizar_ruleta(self, id_ruleta: UUID, **kwargs) -> Optional[Ruleta]:
-
-        ruleta = self.obtener_ruleta(id_ruleta)
-
-        if not ruleta:
-            return None
-
-        for key, value in kwargs.items():
-            if hasattr(ruleta, key):
-                setattr(ruleta, key, value)
-
-        self.db.commit()
-        self.db.refresh(ruleta)
-
-        return ruleta
-
-    def eliminar_ruleta(self, id_ruleta: UUID) -> bool:
-
-        ruleta = self.obtener_ruleta(id_ruleta)
-
-        if ruleta:
-            self.db.delete(ruleta)
-            self.db.commit()
-            return True
-
-        return False
+    return False

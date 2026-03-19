@@ -1,58 +1,77 @@
-from sqlalchemy.orm import Session
-from src.entities.usuario import Usuario
 from typing import List, Optional
-import uuid
+from uuid import UUID
+from src.database.config import SessionLocal
+from src.entities.usuario import Usuario
+
+db = SessionLocal()
 
 
-def crear_usuario(
-    db: Session,
+def crear(
     nombre: str,
     username: str,
     password_hash: str,
     email: str,
-    id_admin: Optional[uuid.UUID] = None,
+    id_usuario_creacion: Optional[UUID] = None,
 ) -> Usuario:
+    """Crea un usuario."""
 
     nuevo_usuario = Usuario(
         nombre=nombre,
         username=username,
         password_hash=password_hash,
         email=email,
-        id_usuario_creacion=id_admin,
+        id_usuario_creacion=id_usuario_creacion,
     )
 
     db.add(nuevo_usuario)
     db.commit()
     db.refresh(nuevo_usuario)
+
     return nuevo_usuario
 
 
-def obtener_usuario_por_id(db: Session, id_usuario: uuid.UUID) -> Optional[Usuario]:
+def obtener_por_id(id_usuario: UUID) -> Optional[Usuario]:
     return db.query(Usuario).filter(Usuario.id_usuario == id_usuario).first()
 
 
-def listar_usuarios(db: Session) -> List[Usuario]:
+def listar_todos() -> List[Usuario]:
     return db.query(Usuario).all()
 
 
-def actualizar_usuario(
-    db: Session,
-    id_usuario: uuid.UUID,
-    id_admin: uuid.UUID,
-    nombre: Optional[str] = None,
-    email: Optional[str] = None,
+def actualizar(
+    id_usuario: UUID,
+    id_usuario_edita: UUID,
+    **kwargs: dict,
 ) -> Optional[Usuario]:
 
-    usuario = db.query(Usuario).filter(Usuario.id_usuario == id_usuario).first()
+    usuario = obtener_por_id(id_usuario)
 
-    if usuario:
-        if nombre:
-            usuario.nombre = nombre
-        if email:
-            usuario.email = email
+    if usuario is None:
+        print("Error: No se encontró el usuario")
+        return None
 
-        usuario.id_usuario_edita = id_admin
+    for key, value in kwargs.items():
+        if hasattr(usuario, key) and value is not None:
+            setattr(usuario, key, value)
 
+    setattr(usuario, "id_usuario_edita", id_usuario_edita)
+
+    try:
         db.commit()
         db.refresh(usuario)
-    return usuario
+        return usuario
+    except Exception as e:
+        db.rollback()
+        print(f"Error al actualizar: {e}")
+        return None
+
+
+def eliminar(id_usuario: UUID) -> bool:
+    usuario = obtener_por_id(id_usuario)
+
+    if usuario:
+        db.delete(usuario)
+        db.commit()
+        return True
+
+    return False
