@@ -1,54 +1,39 @@
 import uuid
-from sqlalchemy import Column, String, Date, DateTime, ForeignKey, func
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, String, Date, DateTime, Boolean, ForeignKey, func
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import relationship
 from src.database.config import Base
 
 
 class Usuario(Base):
-
     __tablename__ = "usuario"
 
     id_usuario = Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4,
-        nullable=False,
-        unique=True,
-        index=True,
+        PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True
     )
 
-    nombre = Column(String(100), nullable=False)
+    nombre = Column(String(150), nullable=False)
     username = Column(String(50), unique=True, nullable=False, index=True)
-    password_hash = Column(String(255), nullable=False)
     email = Column(String(100), unique=True, nullable=False)
-
     fecha_nac = Column(Date, nullable=True)
 
-    fecha_creacion = Column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
-    )
+    password_hash = Column(String(255), nullable=False)
+    rol = Column(String(50), default="usuario", nullable=False)
+    activo = Column(Boolean, default=True)
 
-    fecha_edicion = Column(DateTime(timezone=True), onupdate=func.now(), nullable=True)
+    fecha_creacion = Column(DateTime(timezone=True), server_default=func.now())
+    fecha_edicion = Column(DateTime(timezone=True), onupdate=func.now())
 
     id_usuario_creacion = Column(
-        UUID(as_uuid=True),
-        ForeignKey("usuario.id_usuario", ondelete="SET NULL"),
-        nullable=True,
+        PG_UUID(as_uuid=True), ForeignKey("usuario.id_usuario"), nullable=True
     )
-
     id_usuario_edita = Column(
-        UUID(as_uuid=True),
-        ForeignKey("usuario.id_usuario", ondelete="SET NULL"),
-        nullable=True,
+        PG_UUID(as_uuid=True), ForeignKey("usuario.id_usuario"), nullable=True
     )
 
-    creado_por = relationship(
-        "Usuario", foreign_keys=[id_usuario_creacion], remote_side=[id_usuario]
-    )
-    editado_por = relationship(
-        "Usuario", foreign_keys=[id_usuario_edita], remote_side=[id_usuario]
+    metodos_pago = relationship(
+        "MetodoPago", back_populates="usuario_dueno", cascade="all, delete-orphan"
     )
 
     def __repr__(self):
-        return f"<Usuario(username='{self.username}', email='{self.email}')>"
+        return f"<Usuario(username='{self.username}', rol='{self.rol}')>"
