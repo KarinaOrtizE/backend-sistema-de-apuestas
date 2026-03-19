@@ -2,7 +2,12 @@ from sqlalchemy.orm import Session
 from src.entities.sorteo import Sorteo
 from datetime import datetime
 import uuid
+import random
+from typing import List, Optional
+from datetime import datetime
 
+from src.database.config import SessionLocal
+from src.entities.sorteo import Sorteo
 
 def programar_sorteo(
     db: Session,
