@@ -18,8 +18,8 @@ def crear_usuario(
     password: str,
     email: str,
     rol: str = "usuario",
-    fecha_nac: date = None,
-    id_usuario_creacion: uuid.UUID = None,
+    fecha_nac: Optional[date] = None,
+    id_usuario_creacion: Optional[uuid.UUID] = None,
 ) -> Usuario:
 
     existente = db.query(Usuario).filter(Usuario.username == username.strip()).first()
@@ -45,10 +45,9 @@ def crear_usuario(
 def login(username: str, password: str) -> Optional[Usuario]:
     usuario = db.query(Usuario).filter(Usuario.username == username.strip()).first()
 
-    if not usuario or not usuario.activo:
+    if not usuario or usuario.activo is False:
         return None
-
-    if usuario.password_hash != _hash_password(password):
+    if usuario.password_hash != _hash_password(password):  # type: ignore
         return None
 
     return usuario
@@ -80,15 +79,15 @@ def actualizar_usuario(
         return None
 
     if nombre:
-        usuario.nombre = nombre.strip()
-    if password:
-        usuario.password_hash = _hash_password(password)
-    if rol:
-        usuario.rol = rol.strip()
-    if activo is not None:
-        usuario.activo = activo
+        setattr(usuario, "nombre", nombre.strip())
+        if password:
+            setattr(usuario, "password_hash", _hash_password(password))
+        if rol:
+            setattr(usuario, "rol", rol.strip())
+        if activo is not None:
+            setattr(usuario, "activo", activo)
 
-    usuario.id_usuario_edita = id_usuario_edita
+        setattr(usuario, "id_usuario_edita", id_usuario_edita)
 
     db.commit()
     db.refresh(usuario)
