@@ -2,7 +2,7 @@
 Script para crear las tablas en Neon (PostgreSQL).
 Ejecutar una vez después de configurar DATABASE_URL en .env:
 
-  python init_db.py
+python init_db.py
 
 No es necesario levantar la API; este script solo aplica el esquema.
 """
@@ -12,13 +12,18 @@ import os
 from dotenv import load_dotenv
 from sqlalchemy.exc import OperationalError
 
-"""
-import src.entities.categoria  # noqa: F401 - registrar modelo
-import src.entities.pedido  # noqa: F401 - registrar modelo
-import src.entities.producto  # noqa: F401 - registrar modelo
+
+import src.entities.apuesta  # noqa: F401 - registrar modelo
+import src.entities.billetera  # noqa: F401 - registrar modelo
+import src.entities.metodo_pago  # noqa: F401 - registrar modelo
+import src.entities.ruleta  # noqa: F401 - registrar modelo
+import src.entities.sorteo  # noqa: F401 - registrar modelo
+import src.entities.transaccion  # noqa: F401 - registrar modelo
 import src.entities.usuario  # noqa: F401 - registrar modelo
+import src.entities.bingo  # noqa: F401 - registrar modelo
+
+# import src.entities.loteria  # noqa: F401 - registrar modelo
 from src.database.config import create_tables
-"""
 
 # Cargar .env desde la carpeta del proyecto (donde está init_db.py)
 load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
