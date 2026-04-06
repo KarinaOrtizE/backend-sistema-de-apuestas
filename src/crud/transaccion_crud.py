@@ -1,12 +1,12 @@
 from typing import List, Optional
 from uuid import UUID
-from src.database.config import SessionLocal
-from src.entities.transaccion import Transaccion
 
-db = SessionLocal()
+from sqlalchemy.orm import Session
+from src.entities.transaccion import Transaccion
 
 
 def crear(
+    db: Session,
     tipo,
     monto: float,
     id_billetera: UUID,
@@ -31,7 +31,7 @@ def crear(
     return nueva_transaccion
 
 
-def obtener_por_id(id_transaccion: UUID) -> Optional[Transaccion]:
+def obtener_por_id(db: Session, id_transaccion: UUID) -> Optional[Transaccion]:
     return (
         db.query(Transaccion)
         .filter(Transaccion.id_transaccion == id_transaccion)
@@ -39,16 +39,17 @@ def obtener_por_id(id_transaccion: UUID) -> Optional[Transaccion]:
     )
 
 
-def listar_todos() -> List[Transaccion]:
-    return db.query(Transaccion).all()
+def listar_todos(db: Session, skip: int = 0, limit: int = 100) -> List[Transaccion]:
+    return db.query(Transaccion).offset(skip).limit(limit).all()
 
 
 def actualizar(
+    db: Session,
     id_transaccion: UUID,
     **kwargs: dict,
 ) -> Optional[Transaccion]:
 
-    transaccion = obtener_por_id(id_transaccion)
+    transaccion = obtener_por_id(db, id_transaccion)
 
     if transaccion is None:
         print("Error: No se encontró la transacción")
@@ -68,8 +69,8 @@ def actualizar(
         return None
 
 
-def eliminar(id_transaccion: UUID) -> bool:
-    transaccion = obtener_por_id(id_transaccion)
+def eliminar(db: Session, id_transaccion: UUID) -> bool:
+    transaccion = obtener_por_id(db, id_transaccion)
 
     if transaccion:
         db.delete(transaccion)
