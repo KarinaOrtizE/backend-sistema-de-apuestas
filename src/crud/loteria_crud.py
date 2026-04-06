@@ -3,14 +3,13 @@ from uuid import UUID
 from decimal import Decimal
 from sqlalchemy import text
 
-from src.database.config import SessionLocal
+from sqlalchemy.orm import Session
+from entities.bingo import Bingo
 from src.entities.loteria import Loteria
-
-db = SessionLocal()
 
 
 def crear_loteria(
-    numero_jugado: str, costo_entrada: float, recompensa: float
+    db: Session, numero_jugado: str, costo_entrada: float, recompensa: float
 ) -> Loteria:
     if len(numero_jugado) != 4:
         raise ValueError("El número debe tener exactamente 4 dígitos")
@@ -38,16 +37,20 @@ def crear_loteria(
     return loteria
 
 
-def obtener_loteria(id_loteria: UUID) -> Optional[Loteria]:
+def obtener_loteria(db: Session, id_loteria: UUID) -> Optional[Loteria]:
     return db.query(Loteria).filter(Loteria.id_loteria == id_loteria).first()
 
 
-def obtener_loterias(skip: int = 0, limit: int = 100) -> List[Loteria]:
+def obtener_loterias(db: Session, skip: int = 0, limit: int = 100) -> List[Loteria]:
     return db.query(Loteria).offset(skip).limit(limit).all()
 
 
-def actualizar_loteria(id_loteria: UUID, **kwargs) -> Optional[Loteria]:
-    loteria = obtener_loteria(id_loteria)
+def listar_todos(db: Session, skip: int = 0, limit: int = 100) -> List[Loteria]:
+    return db.query(Loteria).offset(skip).limit(limit).all()
+
+
+def actualizar_loteria(db: Session, id_loteria: UUID, **kwargs) -> Optional[Loteria]:
+    loteria = obtener_loteria(db, id_loteria)
 
     if not loteria:
         return None
@@ -82,8 +85,8 @@ def actualizar_loteria(id_loteria: UUID, **kwargs) -> Optional[Loteria]:
     return loteria
 
 
-def eliminar_loteria(id_loteria: UUID) -> bool:
-    loteria = obtener_loteria(id_loteria)
+def eliminar_loteria(db: Session, id_loteria: UUID) -> bool:
+    loteria = obtener_loteria(db, id_loteria)
 
     if loteria:
         db.delete(loteria)
