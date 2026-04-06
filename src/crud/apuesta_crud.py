@@ -1,19 +1,21 @@
 from typing import List, Optional
 from uuid import UUID
-from src.database.config import SessionLocal
+from sqlalchemy.orm import Session
 from src.entities.apuesta import Apuesta, EstadoApuesta
-
-db = SessionLocal()
 
 
 def crear(
-    id_usuario: UUID, id_sorteo: UUID, monto: float, id_usuario_creacion: UUID
+    db: Session,
+    id_usuario: UUID,
+    id_sorteo: UUID,
+    monto_apostado: float,
+    id_usuario_creacion: UUID,
 ) -> Apuesta:
     """Crea la apuesta. Por defecto el estado será PENDIENTE."""
     nueva_apuesta = Apuesta(
         id_usuario=id_usuario,
         id_sorteo=id_sorteo,
-        monto_apostado=monto,
+        monto_apostado=monto_apostado,
         id_usuario_creacion=id_usuario_creacion,
         estado=EstadoApuesta.PENDIENTE,
     )
@@ -23,20 +25,21 @@ def crear(
     return nueva_apuesta
 
 
-def obtener_por_id(id_apuesta: UUID) -> Optional[Apuesta]:
+def obtener_por_id(db: Session, id_apuesta: UUID) -> Optional[Apuesta]:
     return db.query(Apuesta).filter(Apuesta.id_apuesta == id_apuesta).first()
 
 
-def listar_todos() -> List[Apuesta]:
-    return db.query(Apuesta).all()
+def listar_todos(db: Session, skip: int = 0, limit: int = 100) -> List[Apuesta]:
+    return db.query(Apuesta).offset(skip).limit(limit).all()
 
 
 def actualizar(
+    db: Session,
     id_apuesta: UUID,
     id_usuario_edita: UUID,
     **kwargs: dict,
 ) -> Optional[Apuesta]:
-    apuesta = obtener_por_id(id_apuesta)
+    apuesta = obtener_por_id(db, id_apuesta)
     if apuesta is None:
         print("Error: No se encontró la apuesta")
         return None
@@ -54,8 +57,8 @@ def actualizar(
         return None
 
 
-def eliminar(id_apuesta: UUID) -> bool:
-    apuesta = obtener_por_id(id_apuesta)
+def eliminar(db: Session, id_apuesta: UUID) -> bool:
+    apuesta = obtener_por_id(db, id_apuesta)
     if apuesta:
         db.delete(apuesta)
         db.commit()
@@ -63,6 +66,6 @@ def eliminar(id_apuesta: UUID) -> bool:
     return False
 
 
-def listar_por_usuario(id_usuario: UUID) -> List[Apuesta]:
+def listar_por_usuario(db: Session, id_usuario: UUID) -> List[Apuesta]:
     """Para que el usuario vea su historial de apuestas."""
     return db.query(Apuesta).filter(Apuesta.id_usuario == id_usuario).all()
