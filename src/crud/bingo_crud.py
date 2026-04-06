@@ -2,10 +2,8 @@ import random
 from typing import List, Optional
 from uuid import UUID
 
-from src.database.config import SessionLocal
+from sqlalchemy.orm import Session
 from src.entities.bingo import Bingo
-
-db = SessionLocal()
 
 
 def generar_matriz_bingo():
@@ -21,9 +19,13 @@ def generar_matriz_bingo():
     return [[cols[c][f] for c in range(5)] for f in range(5)]
 
 
-def crear(costo: float = 5000.0, recompensa: float = 25000.0) -> Bingo:
+def crear(
+    db: Session, costo_entrada: float = 5000.0, recompensa: float = 250000.0
+) -> Bingo:
     nuevo = Bingo(
-        costo_entrada=costo, recompensa=recompensa, carton_json=generar_matriz_bingo()
+        costo_entrada=costo_entrada,
+        recompensa=recompensa,
+        carton_json=generar_matriz_bingo(),
     )
     db.add(nuevo)
     db.commit()
@@ -31,16 +33,16 @@ def crear(costo: float = 5000.0, recompensa: float = 25000.0) -> Bingo:
     return nuevo
 
 
-def obtener_por_id(id_bingo: UUID) -> Optional[Bingo]:
+def obtener_por_id(db: Session, id_bingo: UUID) -> Optional[Bingo]:
     return db.query(Bingo).filter(Bingo.id_bingo == id_bingo).first()
 
 
-def listar_todos() -> List[Bingo]:
-    return db.query(Bingo).all()
+def listar_todos(db: Session, skip: int = 0, limit: int = 100) -> List[Bingo]:
+    return db.query(Bingo).offset(skip).limit(limit).all()
 
 
-def actualizar(id_bingo: UUID, **kwargs: dict) -> Optional[Bingo]:
-    bingo = obtener_por_id(id_bingo)
+def actualizar(db: Session, id_bingo: UUID, **kwargs: dict) -> Optional[Bingo]:
+    bingo = obtener_por_id(db, id_bingo)
 
     if bingo is None:
         print("Error: No se encontró el bingo")
@@ -58,8 +60,8 @@ def actualizar(id_bingo: UUID, **kwargs: dict) -> Optional[Bingo]:
         return None
 
 
-def eliminar(id_bingo: UUID) -> bool:
-    bingo = obtener_por_id(id_bingo)
+def eliminar(db: Session, id_bingo: UUID) -> bool:
+    bingo = obtener_por_id(db, id_bingo)
     if bingo:
         db.delete(bingo)
         db.commit()
