@@ -81,18 +81,18 @@ La arquitectura sigue un patrón de separación de responsabilidades:
 
 ## 🛠️ Instalación y Configuración
 
-# 1. Clonar el repositorio
+### 1. Clonar el repositorio
 git clone <URL_DEL_REPOSITORIO>
 cd Backend-sistema-de-apuestas
 
-# 2. Instalar dependencias
+### 2. Instalar dependencias
 py -m pip install -r requirements.txt
 
-# 3. Configurar variables de entorno
+### 3. Configurar variables de entorno
 Crea un archivo .env en la raíz con la cadena de conexión de Neon:
 DATABASE_URL='string_de_conexion_a_neon'
 
-# 4. Ejecutar la aplicación
+### 4. Ejecutar la aplicación
 El punto de entrada principal es main.py, que arranca el servidor en el puerto 8000:
 python main.py
 
@@ -113,4 +113,4 @@ Desde allí podrás probar los endpoints (por cada entidad):
 ## 🎥 Evidencia en Video
 Puedes ver la demostración del funcionamiento de la API, las pruebas en Swagger y la verificación de datos en Neon en el siguiente enlace:
 
-🔗 
+🔗 https://youtu.be/2HVsYCrzE4M?si=-xOn39GUCHZuo4vJ
