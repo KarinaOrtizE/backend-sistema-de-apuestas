@@ -18,7 +18,7 @@ def crear_usuario(
     email: str,
     rol: str = "usuario",
     fecha_nac: Optional[date] = None,
-    id_usuario_creacion: Optional[uuid.UUID] = None,
+    # id_usuario_creacion: Optional[uuid.UUID] = None,
 ) -> Usuario:
 
     existente = db.query(Usuario).filter(Usuario.username == username.strip()).first()
@@ -32,7 +32,7 @@ def crear_usuario(
         email=email.strip().lower(),
         rol=rol,
         fecha_nac=fecha_nac,
-        id_usuario_creacion=id_usuario_creacion,
+        # id_usuario_creacion=id_usuario_creacion,
     )
 
     db.add(nuevo_usuario)
@@ -66,7 +66,7 @@ def hay_usuarios(db: Session) -> bool:
 
 
 def actualizar_usuario(
-    db: Session, id_usuario: uuid.UUID, id_usuario_edita: uuid.UUID, **kwargs
+    db: Session, id_usuario: uuid.UUID, **kwargs
 ) -> Optional[Usuario]:
 
     usuario = obtener_por_id(db, id_usuario)
@@ -88,7 +88,7 @@ def actualizar_usuario(
             elif hasattr(usuario, key):
                 setattr(usuario, key, value)
 
-    setattr(usuario, "id_usuario_edita", id_usuario_edita)
+    # setattr(usuario, "id_usuario_edita", id_usuario_edita)
 
     try:
         db.commit()
