@@ -16,7 +16,6 @@ class MetodoPagoCreate(BaseModel):
     tipo_metodo: str
     nombre_titular: str
     id_usuario_dueno: UUID
-    id_usuario_creacion: UUID
 
 
 class MetodoPagoUpdate(BaseModel):
@@ -34,7 +33,6 @@ class MetodoPagoRead(BaseModel):
     id_usuario_dueno: UUID
     fecha_creacion: datetime
     fecha_edicion: Optional[datetime] = None
-    id_usuario_creacion: UUID
     id_usuario_edita: Optional[UUID] = None
 
 
@@ -67,7 +65,6 @@ def crear_metodo(body: MetodoPagoCreate, db: Session = Depends(get_db)):
         tipo_metodo=body.tipo_metodo,
         nombre_titular=body.nombre_titular,
         id_usuario_dueno=body.id_usuario_dueno,
-        id_usuario_creacion=body.id_usuario_creacion,
     )
 
 
