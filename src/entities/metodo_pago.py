@@ -21,7 +21,7 @@ class MetodoPago(Base):
         nullable=False,
     )
     id_usuario_creacion = Column(
-        UUID(as_uuid=True), ForeignKey("usuario.id_usuario"), nullable=False
+        UUID(as_uuid=True), ForeignKey("usuario.id_usuario"), nullable=True
     )
     id_usuario_edita = Column(
         UUID(as_uuid=True), ForeignKey("usuario.id_usuario"), nullable=True

@@ -10,14 +10,12 @@ def crear_metodo_pago(
     tipo_metodo: str,
     nombre_titular: str,
     id_usuario_dueno: uuid.UUID,
-    id_usuario_creacion: uuid.UUID,
 ) -> MetodoPago:
 
     nuevo_metodo = MetodoPago(
         tipo_metodo=tipo_metodo.strip(),
         nombre_titular=nombre_titular.strip(),
         id_usuario_dueno=id_usuario_dueno,
-        id_usuario_creacion=id_usuario_creacion,
     )
 
     db.add(nuevo_metodo)
