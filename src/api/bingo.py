@@ -11,23 +11,24 @@ router = APIRouter(prefix="/bingos", tags=["bingos"])
 
 
 class BingoCreate(BaseModel):
-    aciertos: Optional[int] = 0
+    aciertos: int = 0
     costo_entrada: float = 5000.0
     recompensa: float = 250000.0
 
 
 class BingoUpdate(BaseModel):
-    aciertos: Optional[int] = 0
-    costo_entrada: Optional[float] = 5000.0
-    recompensa: Optional[float] = 250000.0
+    aciertos: Optional[int] = None
+    costo_entrada: Optional[float] = None
+    recompensa: Optional[float] = None
 
 
 class BingoRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    aciertos: Optional[int] = 0
-    costo_entrada: Optional[float] = 5000.0
-    recompensa: Optional[float] = 250000.0
+    id_bingo: UUID
+    aciertos: int
+    costo_entrada: float
+    recompensa: float
 
 
 @router.get("", response_model=List[BingoRead])

@@ -15,10 +15,13 @@ router = APIRouter(prefix="/billeteras", tags=["billeteras"])
 
 class BilleteraCreate(BaseModel):
     id_usuario: UUID
-    id_usuario_creacion: Optional[UUID] = None
+    saldo: Decimal
+    id_usuario_creacion: UUID
 
 
 class BilleteraUpdate(BaseModel):
+    id_usuario: Optional[UUID] = None
+    saldo: Optional[Decimal] = None
     id_usuario_edita: UUID
 
 
@@ -33,7 +36,7 @@ class BilleteraRead(BaseModel):
     id_billetera: UUID
     id_usuario: UUID
     saldo: Decimal
-    fecha_creacion: Optional[datetime] = None
+    fecha_creacion: datetime
     fecha_edicion: Optional[datetime] = None
     id_usuario_creacion: UUID
     id_usuario_edita: Optional[UUID] = None
@@ -43,14 +46,13 @@ class BilleteraRead(BaseModel):
 def listar_billeteras(
     db: DbSession, skip: int = 0, limit: int = 100
 ) -> List[BilleteraRead]:
-    """Lista todas las billeteras"""
-    return crud_billetera.listar(db, skip=skip, limit=limit)
+    return crud_billetera.listar_todos(db, skip=skip, limit=limit)
 
 
 @router.get("/{id_billetera}", response_model=BilleteraRead)
 def obtener_billetera(db: DbSession, id_billetera: UUID) -> BilleteraRead:
     """Obtiene una billetera por su ID"""
-    b = crud_billetera.obtener(db, id_billetera)
+    b = crud_billetera.obtener_por_id(db, id_billetera)
     if not b:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Billetera no encontrada"
