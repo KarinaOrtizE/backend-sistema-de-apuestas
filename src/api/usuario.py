@@ -27,7 +27,7 @@ class UsuarioUpdate(BaseModel):
     password: Optional[str] = None
     rol: Optional[str] = None
     activo: Optional[bool] = None
-    id_usuario_edita: UUID
+    # id_usuario_edita: UUID
 
 
 class UsuarioRead(BaseModel):
