@@ -22,15 +22,15 @@ class Usuario(Base):
     rol = Column(String(50), default="usuario", nullable=False)
     activo = Column(Boolean, default=True)
 
-    fecha_creacion = Column(DateTime(timezone=True), server_default=func.now())
-    fecha_edicion = Column(DateTime(timezone=True), onupdate=func.now())
+    """fecha_creacion = Column(DateTime(timezone=True), server_default=func.now())
+    fecha_edicion = Column(DateTime(timezone=True), onupdate=func.now())"""
 
-    id_usuario_creacion = Column(
+    """id_usuario_creacion = Column(
         PG_UUID(as_uuid=True), ForeignKey("usuario.id_usuario"), nullable=True
     )
     id_usuario_edita = Column(
         PG_UUID(as_uuid=True), ForeignKey("usuario.id_usuario"), nullable=True
-    )
+    )"""
 
     # Relación con MetodoPago: especificamos la columna que es la FK
     metodos_pago = relationship(
