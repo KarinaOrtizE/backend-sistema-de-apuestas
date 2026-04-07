@@ -17,7 +17,7 @@ class UsuarioCreate(BaseModel):
     username: str
     email: EmailStr
     password: str
-    rol: Optional[str] = "usuario"
+    rol: str = "admin"
     fecha_nac: Optional[date] = None
 
 
