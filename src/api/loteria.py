@@ -30,8 +30,6 @@ class LoteriaRead(BaseModel):
     numero_jugado: str
     costo_entrada: float
     recompensa: float
-    fecha_creacion: Optional[datetime] = None
-    fecha_edicion: Optional[datetime] = None
 
 
 @router.get("", response_model=List[LoteriaRead])

@@ -16,7 +16,7 @@ class ApuestaCreate(BaseModel):
     id_usuario: UUID
     id_sorteo: UUID
     monto_apostado: float
-    estado: Optional[EstadoApuesta] = EstadoApuesta.PENDIENTE
+    estado: EstadoApuesta = EstadoApuesta.PENDIENTE
     id_usuario_creacion: UUID
 
 
@@ -35,8 +35,8 @@ class ApuestaRead(BaseModel):
     id_usuario: UUID
     id_sorteo: UUID
     monto_apostado: float
-    estado: Optional[EstadoApuesta] = EstadoApuesta.PENDIENTE
-    fecha_creacion: Optional[datetime] = None
+    estado: EstadoApuesta
+    fecha_creacion: datetime
     fecha_edicion: Optional[datetime] = None
     id_usuario_creacion: UUID
     id_usuario_edita: Optional[UUID] = None

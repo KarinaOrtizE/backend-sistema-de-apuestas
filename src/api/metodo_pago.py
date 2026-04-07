@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 
@@ -31,6 +32,10 @@ class MetodoPagoRead(BaseModel):
     tipo_metodo: str
     nombre_titular: str
     id_usuario_dueno: UUID
+    fecha_creacion: datetime
+    fecha_edicion: Optional[datetime] = None
+    id_usuario_creacion: UUID
+    id_usuario_edita: Optional[UUID] = None
 
 
 @router.get("", response_model=List[MetodoPagoRead])

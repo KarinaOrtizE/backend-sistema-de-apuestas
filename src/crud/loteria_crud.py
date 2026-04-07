@@ -4,7 +4,6 @@ from decimal import Decimal
 from sqlalchemy import text
 
 from sqlalchemy.orm import Session
-from entities.bingo import Bingo
 from src.entities.loteria import Loteria
 
 
