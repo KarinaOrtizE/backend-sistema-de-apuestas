@@ -20,9 +20,13 @@ def generar_matriz_bingo():
 
 
 def crear(
-    db: Session, costo_entrada: float = 5000.0, recompensa: float = 250000.0
+    db: Session,
+    aciertos: int = 0,
+    costo_entrada: float = 5000.0,
+    recompensa: float = 250000.0,
 ) -> Bingo:
     nuevo = Bingo(
+        aciertos=aciertos,  # 🔥 SOLUCIÓN
         costo_entrada=costo_entrada,
         recompensa=recompensa,
         carton_json=generar_matriz_bingo(),

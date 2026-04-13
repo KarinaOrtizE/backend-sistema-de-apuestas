@@ -52,7 +52,7 @@ def recargar_saldo(
     """Recarga saldo a la billetera."""
     if monto <= 0:
         raise ValueError("El monto debe ser positivo")
-    if round(monto, 2) != monto:
+    if monto.as_tuple().exponent < -2:
         raise ValueError("El monto no puede tener más de 2 decimales")
 
     billetera: Optional[Billetera] = (
@@ -61,7 +61,7 @@ def recargar_saldo(
     if not billetera:
         raise ValueError("La billetera no existe")
 
-    billetera.saldo += monto_decimal  # type: ignore
+    billetera.saldo += monto  # type: ignore
     billetera.id_usuario_edita = id_usuario_operacion  # type: ignore
 
     db.commit()
