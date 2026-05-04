@@ -6,19 +6,56 @@ from sqlalchemy.orm import Session
 from src.entities.billetera import Billetera
 
 
+def obtener_por_id(db: Session, billetera_id: UUID) -> Optional[Billetera]:
+    """Obtiene una billetera por su ID."""
+    return db.query(Billetera).filter(Billetera.id_billetera == billetera_id).first()
+
+
+def recargar_saldo(
+    db: Session, billetera_id: UUID, monto: Decimal, id_usuario_operacion: UUID
+) -> Billetera:
+    """Recarga saldo directamente a la billetera (uso administrativo)."""
+    if monto <= 0:
+        raise ValueError("El monto debe ser positivo")
+
+    billetera = (
+        db.query(Billetera)
+        .filter(Billetera.id_billetera == billetera_id)
+        .with_for_update()
+        .first()
+    )
+
+    if not billetera:
+        raise ValueError("La billetera no existe")
+
+    billetera.saldo += monto
+    billetera.id_usuario_edita = id_usuario_operacion
+
+    try:
+        db.commit()
+        db.refresh(billetera)
+        return billetera
+    except Exception as e:
+        db.rollback()
+        raise e
+
+
+def consultar_saldo(db: Session, billetera_id: UUID) -> float:
+    """Consulta el saldo actual de una billetera."""
+    billetera = obtener_por_id(db, billetera_id)
+    if not billetera:
+        raise ValueError("La billetera no existe")
+    return float(billetera.saldo)
+
+
 def crear(
     db: Session, id_usuario: UUID, id_usuario_creacion: Optional[UUID] = None
 ) -> Billetera:
     """Crea una nueva billetera para un usuario."""
-    usuario = db.execute(
-        text("SELECT id_usuario FROM usuario WHERE id_usuario = :id_usuario"),
-        {"id_usuario": id_usuario},
-    ).first()
-
-    if not usuario:
-        raise ValueError("El usuario no existe")
-
-    billetera_existente = obtener_por_id(db, id_usuario)
+    # Verificar si ya existe para evitar duplicados
+    billetera_existente = (
+        db.query(Billetera).filter(Billetera.id_usuario == id_usuario).first()
+    )
     if billetera_existente:
         raise ValueError("El usuario ya tiene una billetera")
 
@@ -29,7 +66,6 @@ def crear(
         id_usuario=id_usuario,
         saldo=Decimal("0.00"),
         id_usuario_creacion=id_usuario_creacion,
-        id_usuario_edita=None,
     )
     db.add(billetera)
     db.commit()
@@ -37,94 +73,14 @@ def crear(
     return billetera
 
 
-def obtener_por_id(db: Session, billetera_id: UUID) -> Billetera | None:
-    """Obtiene una billetera por su ID."""
-    return db.query(Billetera).filter(Billetera.id_billetera == billetera_id).first()
-
-
-def listar_todos(db: Session, skip: int = 0, limit: int = 100) -> List[Billetera]:
-    return db.query(Billetera).offset(skip).limit(limit).all()
-
-
-def recargar_saldo(
-    db: Session, billetera_id: UUID, monto: Decimal, id_usuario_operacion: UUID
-) -> Billetera:
-    """Recarga saldo a la billetera."""
-    if monto <= 0:
-        raise ValueError("El monto debe ser positivo")
-    if monto.as_tuple().exponent < -2:
-        raise ValueError("El monto no puede tener más de 2 decimales")
-
-    billetera: Optional[Billetera] = (
-        db.query(Billetera).filter(Billetera.id_billetera == billetera_id).first()
-    )
-    if not billetera:
-        raise ValueError("La billetera no existe")
-
-    billetera.saldo += monto  # type: ignore
-    billetera.id_usuario_edita = id_usuario_operacion  # type: ignore
-
-    db.commit()
-    db.refresh(billetera)
-    return billetera
-
-
-def consultar_saldo(db: Session, billetera_id: UUID) -> float:
-    """Consulta el saldo actual de una billetera."""
-    billetera = (
-        db.query(Billetera).filter(Billetera.id_billetera == billetera_id).first()
-    )
-    if not billetera:
-        raise ValueError("La billetera no existe")
-    return float(billetera.saldo)  # type: ignore
-
-
-def actualizar(
-    db: Session, billetera_id: UUID, id_usuario_edita: Optional[UUID] = None, **kwargs
-) -> Billetera | None:
-    """Actualiza información de la billetera (solo auditoría)."""
-    campos_prohibidos = ["saldo", "id_usuario"]
-
-    billetera = (
-        db.query(Billetera).filter(Billetera.id_billetera == billetera_id).first()
-    )
-    if not billetera:
-        return None
-
-    for key in kwargs:
-        if key in campos_prohibidos:
-            raise ValueError(f"No se puede actualizar el campo '{key}' directamente")
-
-    if id_usuario_edita is None:
-        admin = db.execute(
-            text("SELECT id_usuario FROM usuario WHERE es_admin = true LIMIT 1")
-        ).first()
-
-        if not admin:
-            raise ValueError("No se encontró un usuario administrador")
-        id_usuario_edita = admin[0]
-
-    setattr(billetera, "id_usuario_edita", id_usuario_edita)
-
-    for key, value in kwargs.items():
-        if hasattr(billetera, key) and key not in campos_prohibidos:
-            setattr(billetera, key, value)
-
-    db.commit()
-    db.refresh(billetera)
-    return billetera
-
-
 def eliminar(db: Session, billetera_id: UUID) -> bool:
-    """Elimina una billetera (solo si saldo = 0)."""
-    billetera = (
-        db.query(Billetera).filter(Billetera.id_billetera == billetera_id).first()
-    )
+    """Elimina una billetera si no tiene saldo."""
+    billetera = obtener_por_id(db, billetera_id)
     if not billetera:
         return False
 
-    #        if billetera.saldo != Decimal("0.00"):  # type: ignore
-    #            raise ValueError("No se puede eliminar: la billetera tiene saldo")
+    if billetera.saldo > 0:
+        raise ValueError("No se puede eliminar una billetera con saldo activo")
 
     db.delete(billetera)
     db.commit()
