@@ -19,7 +19,7 @@ class Bingo(Base):
 
     aciertos = Column(Integer, nullable=True)
     carton_json = Column(JSONB, nullable=False)
-    costo_entrada = Column(Float, nullable=False, default=5000.0)
+    costo_entrada = Column(Float, nullable=False)
     recompensa = Column(Float, nullable=True)
 
     sorteos = relationship("Sorteo", back_populates="bingo")
