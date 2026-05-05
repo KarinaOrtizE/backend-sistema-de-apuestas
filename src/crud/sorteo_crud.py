@@ -7,12 +7,17 @@ from src.entities.sorteo import Sorteo
 
 
 def crear_sorteo(
-    db: Session,
-    fecha_sorteo: datetime,
-    id_bingo: Optional[uuid.UUID] = None,
-    id_ruleta: Optional[uuid.UUID] = None,
-    id_loteria: Optional[uuid.UUID] = None,
-) -> Sorteo:
+    db: Session, fecha_sorteo: datetime, id_bingo=None, id_ruleta=None, id_loteria=None
+):
+    juegos = [id_bingo, id_ruleta, id_loteria]
+    cantidad_juegos = len([j for j in juegos if j is not None])
+
+    if cantidad_juegos > 1:
+        raise ValueError("Error: No puedes asignar un sorteo a varios juegos a la vez.")
+    if cantidad_juegos == 0:
+        raise ValueError(
+            "Error: Debes asignar el sorteo a un juego (Bingo, Ruleta o Lotería)."
+        )
 
     nuevo = Sorteo(
         fecha_sorteo=fecha_sorteo,
