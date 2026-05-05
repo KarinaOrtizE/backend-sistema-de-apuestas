@@ -1,10 +1,3 @@
-import uuid
-from sqlalchemy import Column, String, Boolean, Date
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID
-from sqlalchemy.orm import relationship
-from src.database.config import Base
-
-
 class Usuario(Base):
     __tablename__ = "usuario"
 
