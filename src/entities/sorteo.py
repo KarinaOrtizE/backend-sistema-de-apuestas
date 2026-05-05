@@ -3,6 +3,7 @@ from sqlalchemy import Column, DateTime, ForeignKey, func
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from src.database.config import Base
+from sqlalchemy import CheckConstraint
 
 
 class Sorteo(Base):
@@ -30,3 +31,12 @@ class Sorteo(Base):
     bingo = relationship("Bingo", back_populates="sorteos")
     ruleta = relationship("Ruleta", back_populates="sorteos")
     loteria = relationship("Loteria", back_populates="sorteos")
+
+    __table_args__ = (
+        CheckConstraint(
+            "(id_bingo IS NOT NULL AND id_ruleta IS NULL AND id_loteria IS NULL) OR "
+            "(id_bingo IS NULL AND id_ruleta IS NOT NULL AND id_loteria IS NULL) OR "
+            "(id_bingo IS NULL AND id_ruleta IS NULL AND id_loteria IS NOT NULL)",
+            name="check_juego_unico",
+        ),
+    )

@@ -85,3 +85,8 @@ def eliminar(db: Session, billetera_id: UUID) -> bool:
     db.delete(billetera)
     db.commit()
     return True
+
+
+def listar_todos(db: Session, skip: int = 0, limit: int = 100) -> List[Billetera]:
+    """Lista todas las billeteras con paginación."""
+    return db.query(Billetera).offset(skip).limit(limit).all()
