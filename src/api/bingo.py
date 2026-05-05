@@ -29,6 +29,7 @@ class BingoRead(BaseModel):
     aciertos: int
     costo_entrada: float
     recompensa: float
+    carton_json: list
 
 
 @router.get("", response_model=List[BingoRead])
@@ -49,7 +50,10 @@ def obtener_bingo(db: DbSession, id_bingo: UUID) -> BingoRead:
 @router.post("", response_model=BingoRead, status_code=status.HTTP_201_CREATED)
 def crear_bingo(db: DbSession, body: BingoCreate) -> BingoRead:
     b = crud_bingo.crear(
-        db, costo_entrada=body.costo_entrada, recompensa=body.recompensa
+        db,
+        aciertos=body.aciertos,
+        costo_entrada=body.costo_entrada,
+        recompensa=body.recompensa,
     )
     return b
 
