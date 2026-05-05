@@ -13,32 +13,31 @@ router = APIRouter(prefix="/usuarios", tags=["usuarios"])
 
 
 class UsuarioCreate(BaseModel):
-    nombre: str
-    username: str
+    nombre_completo: str
+    nombre_usuario: str
     email: EmailStr
-    password: str
+    clave: str
     rol: str = "admin"
-    fecha_nac: Optional[date] = None
-
-
-class UsuarioUpdate(BaseModel):
-    nombre: Optional[str] = None
-    username: Optional[str] = None
-    password: Optional[str] = None
-    rol: Optional[str] = None
-    activo: Optional[bool] = None
-    # id_usuario_edita: UUID
+    telefono: Optional[str] = None
+    activo: bool = True
 
 
 class UsuarioRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-
     id_usuario: UUID
-    nombre: str
-    username: str
+    nombre_completo: str
+    nombre_usuario: str
     email: str
     rol: str
     activo: bool
+
+
+class UsuarioUpdate(BaseModel):
+    nombre_completo: Optional[str] = None
+    nombre_usuario: Optional[str] = None
+    clave: Optional[str] = None
+    rol: Optional[str] = None
+    activo: Optional[bool] = None
 
 
 @router.get("", response_model=List[UsuarioRead])
@@ -63,32 +62,36 @@ def crear_usuario(body: UsuarioCreate, db: Session = Depends(get_db)):
     try:
         usuario = crud_usuario.crear_usuario(
             db=db,
-            nombre=body.nombre,
-            username=body.username,
-            password=body.password,
+            nombre=body.nombre_completo,  # mapeo
+            username=body.nombre_usuario,  # mapeo
+            password=body.clave,  # mapeo
             email=str(body.email),
             rol=body.rol,
-            fecha_nac=body.fecha_nac,
         )
         return usuario
-
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.put("/{id_usuario}", response_model=UsuarioRead)
 def actualizar_usuario(
     id_usuario: UUID, body: UsuarioUpdate, db: Session = Depends(get_db)
 ):
-    data = body.model_dump(exclude_unset=True)
+    data = {}
+    if body.nombre_completo is not None:
+        data["nombre"] = body.nombre_completo
+    if body.nombre_usuario is not None:
+        data["username"] = body.nombre_usuario
+    if body.clave is not None:
+        data["password"] = body.clave
+    if body.rol is not None:
+        data["rol"] = body.rol
+    if body.activo is not None:
+        data["activo"] = body.activo
 
     usuario = crud_usuario.actualizar_usuario(db=db, id_usuario=id_usuario, **data)
-
     if not usuario:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado"
-        )
-
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
     return usuario
 
 
