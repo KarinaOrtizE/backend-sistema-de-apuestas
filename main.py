@@ -1,25 +1,14 @@
 import uvicorn
-from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-app = FastAPI(
-    title="API Sistema de Apuestas",
-    description="Backend para la gestión de usuarios y apuestas",
-    version="1.0.0",
-)
-
-origins = [
-    "http://localhost:4200",
-]
+from src.api.app import app
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["http://localhost:4200"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 if __name__ == "__main__":
     print("Iniciando servidor en http://localhost:8000")
