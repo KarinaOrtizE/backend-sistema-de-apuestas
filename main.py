@@ -1,19 +1,32 @@
-"""
-Arranca la API FastAPI (uvicorn).rando e
-
-python main.py
-
-Documentación interactiva: http://0.0.0.0:8000/docs
-
-Para crear tablas en la base de datos, usa: python migrardb.py
-"""
-
 import uvicorn
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-from src.api.app import app
+app = FastAPI(
+    title="API Sistema de Apuestas",
+    description="Backend para la gestión de usuarios y apuestas",
+    version="1.0.0",
+)
+
+origins = [
+    "http://localhost:4200",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 if __name__ == "__main__":
-    # reload exige el string de importación; `app` sigue disponible para tests / ASGI
+    print("Iniciando servidor en http://localhost:8000")
     uvicorn.run(
-        "src.api.app:app", host="0.0.0.0", port=8000, reload=True, log_level="debug"
+        "main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
+        log_level="debug",
     )
