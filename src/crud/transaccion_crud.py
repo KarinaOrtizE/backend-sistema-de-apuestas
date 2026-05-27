@@ -1,20 +1,23 @@
+from decimal import Decimal
 from typing import List, Optional
 from uuid import UUID
-from decimal import Decimal
+
 from sqlalchemy.orm import Session
-from src.entities.transaccion import Transaccion, TipoTransaccion
+
 from src.entities.billetera import Billetera
+from src.entities.transaccion import TipoTransaccion, Transaccion
 
 
 def crear(
     db: Session,
     tipo: TipoTransaccion,
-    monto: float,
+    monto: Decimal,
     id_billetera: UUID,
     id_metodo_pago: UUID,
 ) -> Transaccion:
+    monto_decimal = Decimal(str(monto))
 
-    if monto <= 0:
+    if monto_decimal <= Decimal("0"):
         raise ValueError("El monto debe ser mayor que 0")
 
     billetera = (
@@ -27,8 +30,6 @@ def crear(
     if not billetera:
         raise ValueError("La billetera vinculada no existe")
 
-    monto_decimal = Decimal(str(monto))
-
     if tipo in [TipoTransaccion.DEPOSITO, TipoTransaccion.PREMIO]:
         billetera.saldo += monto_decimal
     elif tipo in [TipoTransaccion.RETIRO, TipoTransaccion.APUESTA]:
@@ -38,7 +39,7 @@ def crear(
 
     nueva_transaccion = Transaccion(
         tipo=tipo,
-        monto=monto,
+        monto=monto_decimal,
         id_billetera=id_billetera,
         id_metodo_pago=id_metodo_pago,
     )
@@ -61,57 +62,17 @@ def obtener_por_id(db: Session, id_transaccion: UUID) -> Optional[Transaccion]:
     )
 
 
+def listar_por_usuario(db: Session, usuario_id: UUID, skip: int = 0, limit: int = 100) -> List[Transaccion]:
+    """Lista transacciones de un usuario filtrando a través de su billetera."""
+    return (
+        db.query(Transaccion)
+        .join(Billetera, Transaccion.id_billetera == Billetera.id_billetera)
+        .filter(Billetera.id_usuario == usuario_id)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+
+
 def listar_todos(db: Session, skip: int = 0, limit: int = 100) -> List[Transaccion]:
     return db.query(Transaccion).offset(skip).limit(limit).all()
-
-
-def actualizar(db: Session, id_transaccion: UUID, **kwargs) -> Optional[Transaccion]:
-    """Actualiza una transacción y ajusta el saldo de la billetera si el monto cambia."""
-
-    transaccion = obtener_por_id(db, id_transaccion)
-    if not transaccion:
-        return None
-
-    if "monto" in kwargs:
-        nuevo_monto = Decimal(str(kwargs["monto"]))
-        monto_antiguo = Decimal(str(transaccion.monto))
-        diferencia = nuevo_monto - monto_antiguo
-
-        billetera = (
-            db.query(Billetera)
-            .filter(Billetera.id_billetera == transaccion.id_billetera)
-            .with_for_update()
-            .first()
-        )
-
-        if not billetera:
-            raise ValueError("Billetera no encontrada para actualizar saldo")
-
-        if transaccion.tipo in [TipoTransaccion.DEPOSITO, TipoTransaccion.PREMIO]:
-            billetera.saldo += diferencia
-        elif transaccion.tipo in [TipoTransaccion.RETIRO, TipoTransaccion.APUESTA]:
-            if billetera.saldo < diferencia:
-                raise ValueError("Saldo insuficiente para el nuevo ajuste de monto")
-            billetera.saldo -= diferencia
-
-    for key, value in kwargs.items():
-        if hasattr(transaccion, key):
-            setattr(transaccion, key, value)
-
-    try:
-        db.commit()
-        db.refresh(transaccion)
-        return transaccion
-    except Exception as e:
-        db.rollback()
-        print(f"Error al actualizar: {e}")
-        return None
-
-
-def eliminar(db: Session, id_transaccion: UUID) -> bool:
-    transaccion = obtener_por_id(db, id_transaccion)
-    if transaccion:
-        db.delete(transaccion)
-        db.commit()
-        return True
-    return False

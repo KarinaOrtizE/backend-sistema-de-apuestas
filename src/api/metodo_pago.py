@@ -37,8 +37,13 @@ class MetodoPagoRead(BaseModel):
 
 
 @router.get("", response_model=List[MetodoPagoRead])
-def listar_metodos(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return crud_metodo.listar_todos(db, skip=skip, limit=limit)
+def listar_metodos(
+    skip: int = 0,
+    limit: int = 100,
+    usuario_id: Optional[UUID] = None,
+    db: Session = Depends(get_db),
+):
+    return crud_metodo.listar_todos(db, skip=skip, limit=limit, usuario_id=usuario_id)
 
 
 @router.get("/{id_metodo}", response_model=MetodoPagoRead)
