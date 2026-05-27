@@ -1,7 +1,6 @@
 from typing import Optional, List
 from uuid import UUID
 from decimal import Decimal
-from sqlalchemy import text
 from sqlalchemy.orm import Session
 from src.entities.billetera import Billetera
 
@@ -9,35 +8,6 @@ from src.entities.billetera import Billetera
 def obtener_por_id(db: Session, billetera_id: UUID) -> Optional[Billetera]:
     """Obtiene una billetera por su ID."""
     return db.query(Billetera).filter(Billetera.id_billetera == billetera_id).first()
-
-
-def recargar_saldo(
-    db: Session, billetera_id: UUID, monto: Decimal, id_usuario_operacion: UUID
-) -> Billetera:
-    """Recarga saldo directamente a la billetera (uso administrativo)."""
-    if monto <= 0:
-        raise ValueError("El monto debe ser positivo")
-
-    billetera = (
-        db.query(Billetera)
-        .filter(Billetera.id_billetera == billetera_id)
-        .with_for_update()
-        .first()
-    )
-
-    if not billetera:
-        raise ValueError("La billetera no existe")
-
-    billetera.saldo += monto
-    billetera.id_usuario_edita = id_usuario_operacion
-
-    try:
-        db.commit()
-        db.refresh(billetera)
-        return billetera
-    except Exception as e:
-        db.rollback()
-        raise e
 
 
 def consultar_saldo(db: Session, billetera_id: UUID) -> float:
@@ -85,6 +55,11 @@ def eliminar(db: Session, billetera_id: UUID) -> bool:
     db.delete(billetera)
     db.commit()
     return True
+
+
+def obtener_por_usuario_id(db: Session, usuario_id: UUID) -> Optional[Billetera]:
+    """Obtiene la billetera asociada a un usuario."""
+    return db.query(Billetera).filter(Billetera.id_usuario == usuario_id).first()
 
 
 def listar_todos(db: Session, skip: int = 0, limit: int = 100) -> List[Billetera]:
