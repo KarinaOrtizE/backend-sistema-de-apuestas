@@ -18,13 +18,6 @@ class TransaccionCreate(BaseModel):
     id_metodo_pago: UUID
 
 
-class TransaccionUpdate(BaseModel):
-    tipo: Optional[TipoTransaccion] = None
-    monto: Optional[float] = None
-    id_billetera: Optional[UUID] = None
-    id_metodo_pago: Optional[UUID] = None
-
-
 class TransaccionRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -37,8 +30,10 @@ class TransaccionRead(BaseModel):
 
 @router.get("", response_model=List[TransaccionRead])
 def listar_transacciones(
-    db: DbSession, skip: int = 0, limit: int = 100
+    db: DbSession, skip: int = 0, limit: int = 100, usuario_id: Optional[UUID] = None
 ) -> List[TransaccionRead]:
+    if usuario_id is not None:
+        return crud_transaccion.listar_por_usuario(db, usuario_id, skip=skip, limit=limit)
     return crud_transaccion.listar_todos(db, skip=skip, limit=limit)
 
 
@@ -48,7 +43,7 @@ def obtener_transaccion(db: DbSession, id_transaccion: UUID) -> TransaccionRead:
     if not t:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Transacción no encontrada",
+            detail="Transaccion no encontrada",
         )
     return t
 
@@ -66,27 +61,3 @@ def crear_transaccion(db: DbSession, body: TransaccionCreate) -> TransaccionRead
         return t
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-
-
-@router.put("/{id_transaccion}", response_model=TransaccionRead)
-def actualizar_transaccion(
-    db: DbSession, id_transaccion: UUID, body: TransaccionUpdate
-) -> TransaccionRead:
-    data = body.model_dump(exclude_unset=True)
-    t = crud_transaccion.actualizar(db, id_transaccion, **data)
-
-    if not t:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Transacción no encontrada",
-        )
-    return t
-
-
-@router.delete("/{id_transaccion}", status_code=status.HTTP_204_NO_CONTENT)
-def eliminar_transaccion(db: DbSession, id_transaccion: UUID) -> None:
-    if not crud_transaccion.eliminar(db, id_transaccion):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Transacción no encontrada",
-        )

@@ -1,9 +1,11 @@
 import hashlib
 import uuid
+from decimal import Decimal
 from typing import List, Optional
 from datetime import date
 from sqlalchemy.orm import Session
 from src.entities.usuario import Usuario
+from src.entities.billetera import Billetera
 
 
 def _hash_password(password: str) -> str:
@@ -36,6 +38,15 @@ def crear_usuario(
     )
 
     db.add(nuevo_usuario)
+    db.flush()  # Obtiene el UUID sin hacer commit
+
+    billetera = Billetera(
+        id_usuario=nuevo_usuario.id_usuario,
+        saldo=Decimal("0.00"),
+        id_usuario_creacion=nuevo_usuario.id_usuario,
+    )
+    db.add(billetera)
+
     db.commit()
     db.refresh(nuevo_usuario)
     return nuevo_usuario

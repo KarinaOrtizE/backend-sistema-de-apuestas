@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 from decimal import Decimal
-from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, ConfigDict
@@ -25,11 +24,6 @@ class BilleteraUpdate(BaseModel):
     id_usuario_edita: UUID
 
 
-class BilleteraRecarga(BaseModel):
-    monto: Decimal = Field(..., gt=0)
-    id_usuario_edita: UUID
-
-
 class BilleteraRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -44,8 +38,11 @@ class BilleteraRead(BaseModel):
 
 @router.get("", response_model=List[BilleteraRead])
 def listar_billeteras(
-    db: DbSession, skip: int = 0, limit: int = 100
+    db: DbSession, skip: int = 0, limit: int = 100, usuario_id: Optional[UUID] = None
 ) -> List[BilleteraRead]:
+    if usuario_id is not None:
+        b = crud_billetera.obtener_por_usuario_id(db, usuario_id)
+        return [b] if b else []
     return crud_billetera.listar_todos(db, skip=skip, limit=limit)
 
 
@@ -68,22 +65,6 @@ def crear_billetera(db: DbSession, body: BilleteraCreate) -> BilleteraRead:
             db,
             id_usuario=body.id_usuario,
             id_usuario_creacion=body.id_usuario_creacion,
-        )
-        return b
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-
-
-@router.post("/{id_billetera}/recargar", response_model=BilleteraRead)
-def recargar_saldo(
-    db: DbSession, id_billetera: UUID, body: BilleteraRecarga
-) -> BilleteraRead:
-    try:
-        b = crud_billetera.recargar_saldo(
-            db,
-            billetera_id=id_billetera,
-            monto=body.monto,
-            id_usuario_operacion=body.id_usuario_edita,
         )
         return b
     except ValueError as e:
