@@ -1,6 +1,7 @@
 """
-Configuración de la base de datos PostgreSQL.
+Configuración de la base de datos.
 Conexión mediante variables de entorno (.env).
+Soporta PostgreSQL y SQLite.
 """
 
 import os
@@ -17,12 +18,21 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise ValueError("Se requiere DATABASE_URL en el archivo .env")
 
+# Configuración específica según el tipo de base de datos
+connect_args = {}
+if DATABASE_URL.startswith("postgresql://") or "neon.tech" in DATABASE_URL:
+    # Configuración para PostgreSQL/Neon.tech
+    connect_args = {"sslmode": "require"}
+elif DATABASE_URL.startswith("sqlite://"):
+    # Configuración para SQLite
+    connect_args = {"check_same_thread": False}
+
 engine = create_engine(
     DATABASE_URL,
     echo=False,
-    pool_pre_ping=True,
-    pool_recycle=300,
-    connect_args={"sslmode": "require"} if "neon.tech" in (DATABASE_URL or "") else {},
+    pool_pre_ping=True if not DATABASE_URL.startswith("sqlite://") else False,
+    pool_recycle=300 if not DATABASE_URL.startswith("sqlite://") else None,
+    connect_args=connect_args,
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

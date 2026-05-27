@@ -28,8 +28,16 @@ def obtener_por_id(db: Session, id_metodo: uuid.UUID) -> Optional[MetodoPago]:
     return db.query(MetodoPago).filter(MetodoPago.id_metodo_pago == id_metodo).first()
 
 
-def listar_todos(db: Session, skip: int = 0, limit: int = 100) -> List[MetodoPago]:
-    return db.query(MetodoPago).offset(skip).limit(limit).all()
+def listar_todos(
+    db: Session,
+    skip: int = 0,
+    limit: int = 100,
+    usuario_id: Optional[uuid.UUID] = None,
+) -> List[MetodoPago]:
+    query = db.query(MetodoPago)
+    if usuario_id is not None:
+        query = query.filter(MetodoPago.id_usuario_dueno == usuario_id)
+    return query.offset(skip).limit(limit).all()
 
 
 def listar_por_usuario(db: Session, id_usuario: uuid.UUID) -> List[MetodoPago]:
