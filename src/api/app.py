@@ -33,7 +33,12 @@ async def lifespan(_app: FastAPI):
     yield
 
 
-app = FastAPI(title="API Sistema de Apuestas", version="1.0.0", lifespan=lifespan)
+app = FastAPI(
+    title="API Sistema de Apuestas",
+    version="1.0.0",
+    lifespan=lifespan,
+    redirect_slashes=False,
+)
 
 app.include_router(usuario.router)
 app.include_router(apuesta.router)
