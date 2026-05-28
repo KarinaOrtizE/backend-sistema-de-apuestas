@@ -1,6 +1,8 @@
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from src.database.config import create_tables
 
@@ -34,6 +36,24 @@ async def lifespan(_app: FastAPI):
 
 
 app = FastAPI(title="API Sistema de Apuestas", version="1.0.0", lifespan=lifespan)
+
+_default_cors_origins = [
+    "http://localhost:4200",
+    "http://127.0.0.1:4200",
+    "https://sistema-de-apuestas-c4610.web.app",
+]
+
+_extra = os.getenv("CORS_ORIGINS", "")
+_extra_origins = [o.strip() for o in _extra.split(",") if o.strip()]
+_cors_allow_origins = list(dict.fromkeys(_default_cors_origins + _extra_origins))
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_cors_allow_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(usuario.router)
 app.include_router(apuesta.router)
