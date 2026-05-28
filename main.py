@@ -5,7 +5,7 @@ from src.api.app import app
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:4200"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -13,9 +13,9 @@ app.add_middleware(
 if __name__ == "__main__":
     print("Iniciando servidor en http://localhost:8000")
     uvicorn.run(
-        "main:app",
+        app,
         host="0.0.0.0",
         port=8000,
-        reload=True,
+        reload=False,
         log_level="debug",
     )
