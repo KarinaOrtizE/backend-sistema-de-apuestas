@@ -35,7 +35,12 @@ async def lifespan(_app: FastAPI):
     yield
 
 
-app = FastAPI(title="API Sistema de Apuestas", version="1.0.0", lifespan=lifespan)
+app = FastAPI(
+    title="API Sistema de Apuestas",
+    version="1.0.0",
+    lifespan=lifespan,
+    redirect_slashes=False,
+)
 
 _default_cors_origins = [
     "http://localhost:4200",
